@@ -1,3 +1,4 @@
 # BLE Micro Pro (nRF52840, Adafruit UF2 bootloader at 0x26000)
-# Minimal board defconfig — ZMK's prj.conf handles BT, USB, GPIO, etc.
-# Clock and other settings are in cocot46lp.conf.
+# board.yml declares the SoC; ZMK prj.conf enables BT, USB, GPIO.
+# Force Nordic SoC family so HAS_NRFX resolves to y in Zephyr 4.1.
+CONFIG_SOC_FAMILY_NORDIC_NRF=y
