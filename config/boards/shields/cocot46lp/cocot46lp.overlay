@@ -1,23 +1,24 @@
 #include <dt-bindings/zmk/matrix-transform.h>
 
+// Disable nice_nano's QSPI flash — it uses P0.14, P0.15, P0.17, P0.20
+// which overlap with our matrix column pins.
+// ZMK will fall back to internal flash storage_partition.
+&qspi {
+    status = "disabled";
+};
+
 / {
     chosen {
         zmk,kscan = &kscan0;
         zmk,matrix-transform = &default_transform;
+        zmk,storage = &storage_partition;
     };
 
-    // Matrix transform: maps physical (row,col) positions to keymap slot indices.
-    // Composite layout: cols 0-6 = col2row scan, cols 7-13 = row2col scan (offset=7).
-    //
-    // Physical GPIO:
-    //   rows (P0.09..P0.12):  row_pins = [9,10,11,12]
-    //   cols (P0.20..P0.14):  col_pins = [20,19,18,17,16,15,14]
-    //
-    // Active positions (matches QMK LAYOUT macro):
-    //   Row 0: 12 keys → cols 0..11 (col6=Y, c2r side; cols 7-11 r2c side)
-    //   Row 1: 12 keys → cols 0..11
-    //   Row 2: 14 keys → cols 0..13 (all positions used)
-    //   Row 3: 11 keys → cols 0..10
+    // Matrix transform: 49 keys (matches QMK LAYOUT macro order)
+    //   Row 0: 12 keys → RC(0,0)..RC(0,11)
+    //   Row 1: 12 keys → RC(1,0)..RC(1,11)
+    //   Row 2: 14 keys → RC(2,0)..RC(2,13)
+    //   Row 3: 11 keys → RC(3,0)..RC(3,10)
     default_transform: keymap_transform_0 {
         compatible = "zmk,matrix-transform";
         columns = <14>;
@@ -30,11 +31,13 @@
         >;
     };
 
-    // Phase 1: col2row — left-half diodes (COL→ROW orientation).
-    // Cols are output (driven high one at a time), rows are input with pull-down.
+    // Phase 1: col2row scan — cols driven, rows sensed (left-half diodes: COL→ROW).
+    // poll-period-ms forces polling mode to avoid GPIO interrupt conflicts
+    // with kscan_row2col which shares the same GPIO pins.
     kscan_col2row: kscan_col2row {
         compatible = "zmk,kscan-gpio-matrix";
         diode-direction = "col2row";
+        poll-period-ms = <10>;
 
         col-gpios
             = <&gpio0 20 GPIO_ACTIVE_HIGH>
@@ -53,11 +56,11 @@
             ;
     };
 
-    // Phase 2: row2col — right-half diodes (ROW→COL orientation).
-    // Rows are output (driven high one at a time), cols are input with pull-down.
+    // Phase 2: row2col scan — rows driven, cols sensed (right-half diodes: ROW→COL).
     kscan_row2col: kscan_row2col {
         compatible = "zmk,kscan-gpio-matrix";
         diode-direction = "row2col";
+        poll-period-ms = <10>;
 
         row-gpios
             = <&gpio0 9  GPIO_ACTIVE_HIGH>
@@ -76,7 +79,7 @@
             ;
     };
 
-    // Composite: combines col2row (cols 0-6) and row2col (cols 7-13, offset=7).
+    // Composite: col2row provides cols 0-6, row2col provides cols 7-13.
     kscan0: kscan_composite {
         compatible = "zmk,kscan-composite";
         rows = <4>;
@@ -85,7 +88,6 @@
         matrix_col2row {
             kscan = <&kscan_col2row>;
         };
-
         matrix_row2col {
             kscan = <&kscan_row2col>;
             column-offset = <7>;
