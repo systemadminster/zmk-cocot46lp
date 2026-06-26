@@ -1,0 +1,9 @@
+if SHIELD_COCOT46LP
+
+config ZMK_KEYBOARD_NAME
+    default "cocot46lp"
+
+config ZMK_SPLIT
+    default n
+
+endif

@@ -1,0 +1,2 @@
+config SHIELD_COCOT46LP
+    def_bool $(shields_list_contains,cocot46lp)

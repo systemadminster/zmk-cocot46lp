@@ -1,0 +1,68 @@
+#include <behaviors.dtsi>
+#include <dt-bindings/zmk/keys.h>
+#include <dt-bindings/zmk/bt.h>
+#include <dt-bindings/zmk/mouse.h>
+
+/ {
+    keymap {
+        compatible = "zmk,keymap";
+
+        // Row layout (matrix positions → keymap slots):
+        //   Row 0: RC(0,0)..RC(0,11)  = 12 keys
+        //   Row 1: RC(1,0)..RC(1,11)  = 12 keys
+        //   Row 2: RC(2,0)..RC(2,13)  = 14 keys
+        //   Row 3: RC(3,0)..RC(3,10)  = 11 keys  (total: 49)
+
+        default_layer {
+            bindings = <
+// Row 0
+&gresc   &kp Q    &kp W    &kp E    &kp R    &kp T      &kp Y    &kp U    &kp I    &kp O    &kp P    &kp GRAVE
+// Row 1
+&kp LCTRL &kp A   &kp S    &kp D    &kp F    &kp G      &kp H    &kp J    &kp K    &kp L    &kp SEMI &kp SQT
+// Row 2
+&kp LALT &kp Z    &kp X    &kp C    &kp V    &kp B      &mkp LCLK &kp BSPC &kp N   &kp M    &kp COMMA &kp DOT &kp FSLH &kp EQUAL
+// Row 3
+&kp RGUI &mo 1    &kp SPACE &kp TAB &kp PG_UP &mkp RCLK &kp PG_DN &kp ENTER &kp SPACE &mo 2 &kp DEL
+            >;
+        };
+
+        lower_layer {
+            bindings = <
+// Row 0
+&kp ESC  &kp F1   &kp F2   &kp F3   &kp F4   &kp F5     &kp N6   &kp N7   &kp N8   &kp N9   &kp N0   &kp MINUS
+// Row 1
+&kp RSHFT &none   &none    &none    &none    &none      &kp LBKT &none    &kp UP   &none    &none    &kp RBKT
+// Row 2
+&kp INS  &none    &none    &none    &none    &none      &mkp LCLK &mkp RCLK &none  &kp LEFT &kp DOWN &kp RIGHT &kp BSLH &kp NON_US_HASH
+// Row 3
+&none    &none    &kp SPACE &kp LGUI &kp PG_UP &mkp MCLK &kp PG_DN &kp ENTER &kp SPACE &none &none
+            >;
+        };
+
+        raise_layer {
+            bindings = <
+// Row 0
+&kp ESC  &kp N1   &kp N2   &kp N3   &kp N4   &kp N5     &kp F6   &kp F7   &kp F8   &kp F9   &kp F10  &kp K_UNDO
+// Row 1
+&kp LSHFT &none   &none    &none    &none    &none      &none    &none    &none    &none    &none    &none
+// Row 2
+&none    &none    &none    &none    &none    &none      &mkp LCLK &mkp RCLK &none   &none    &none    &none    &none    &none
+// Row 3
+&kp LGUI &none    &kp SPACE &kp LGUI &kp PG_UP &trans   &kp PG_DN &kp ENTER &kp SPACE &none &kp DEL
+            >;
+        };
+
+        adjust_layer {
+            bindings = <
+// Row 0  (BT controls on left side)
+&bt BT_CLR &bt BT_SEL 0 &bt BT_SEL 1 &bt BT_SEL 2 &bt BT_SEL 3 &none   &none    &none    &none    &none    &none    &none
+// Row 1
+&none    &none    &none    &none    &none    &none      &none    &none    &none    &none    &none    &none
+// Row 2
+&none    &none    &none    &none    &none    &none      &none    &none    &none    &none    &none    &none    &none    &none
+// Row 3
+&none    &none    &none    &none    &none    &none      &none    &none    &none    &none    &none
+            >;
+        };
+    };
+};
