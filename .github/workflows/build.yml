@@ -7,4 +7,48 @@ on:
 
 jobs:
   build:
-    uses: zmkfirmware/zmk/.github/workflows/build-user-config.yml@main
+    runs-on: ubuntu-latest
+    container:
+      image: zmkfirmware/zmk-build-arm:3.5
+    name: Build cocot46lp (nice_nano_v2)
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache west modules
+        uses: actions/cache@v4
+        continue-on-error: true
+        with:
+          path: |
+            modules/
+            tools/
+            zephyr/
+            zmk/
+          key: west-3.5-${{ hashFiles('config/west.yml') }}
+
+      - name: Initialize west workspace
+        run: west init -l config
+
+      - name: Update west modules
+        run: west update
+
+      - name: Export Zephyr CMake package
+        run: west zephyr-export
+
+      - name: Build firmware
+        run: |
+          west build -s zmk/app \
+            -b nice_nano_v2 \
+            -- \
+            -DSHIELD=cocot46lp \
+            -DZMK_CONFIG="${GITHUB_WORKSPACE}/config"
+
+      - name: Rename artifact
+        run: cp build/zephyr/zmk.uf2 cocot46lp-nice_nano_v2.uf2
+
+      - name: Upload firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: cocot46lp-firmware
+          path: cocot46lp-nice_nano_v2.uf2
