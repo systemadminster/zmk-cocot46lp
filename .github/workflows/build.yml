@@ -39,16 +39,16 @@ jobs:
       - name: Build firmware
         run: |
           west build -s zmk/app \
-            -b nice_nano_v2 \
+            -b nice_nano \
             -- \
             -DSHIELD=cocot46lp \
             -DZMK_CONFIG="${GITHUB_WORKSPACE}/config"
 
       - name: Rename artifact
-        run: cp build/zephyr/zmk.uf2 cocot46lp-nice_nano_v2.uf2
+        run: cp build/zephyr/zmk.uf2 cocot46lp-nice_nano.uf2
 
       - name: Upload firmware
         uses: actions/upload-artifact@v4
         with:
           name: cocot46lp-firmware
-          path: cocot46lp-nice_nano_v2.uf2
+          path: cocot46lp-nice_nano.uf2
