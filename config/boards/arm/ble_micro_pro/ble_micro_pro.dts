@@ -40,12 +40,19 @@
 	};
 };
 
+/* Zephyr 4.x gpio_nrfx requires each GPIO bank to reference a GPIOTE instance */
+&gpiote0 {
+	status = "okay";
+};
+
 &gpio0 {
 	status = "okay";
+	gpiote-instance = <&gpiote0>;
 };
 
 &gpio1 {
 	status = "okay";
+	gpiote-instance = <&gpiote0>;
 };
 
 &usbd {
