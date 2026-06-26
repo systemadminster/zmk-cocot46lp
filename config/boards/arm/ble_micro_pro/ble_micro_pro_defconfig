@@ -1,6 +1,18 @@
 # BLE Micro Pro (nRF52840, Adafruit UF2 bootloader at 0x26000)
-# SoC is selected via Kconfig.ble_micro_pro; ZMK prj.conf enables BT/USB/GPIO.
-# Clock config lives in cocot46lp.conf.
 
-# Generate .uf2 output for drag-and-drop flashing via the Adafruit bootloader
+CONFIG_ARM_MPU=y
+CONFIG_PINCTRL=y
+CONFIG_GPIO=y
+
+CONFIG_USE_DT_CODE_PARTITION=y
 CONFIG_BUILD_OUTPUT_UF2=y
+
+CONFIG_MPU_ALLOW_FLASH_WRITE=y
+CONFIG_NVS=y
+CONFIG_SETTINGS_NVS=y
+CONFIG_FLASH=y
+CONFIG_FLASH_PAGE_LAYOUT=y
+CONFIG_FLASH_MAP=y
+
+CONFIG_ZMK_USB=y
+CONFIG_ZMK_BLE=y
