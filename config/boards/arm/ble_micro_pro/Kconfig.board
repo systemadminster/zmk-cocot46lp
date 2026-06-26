@@ -1,2 +1,0 @@
-config BOARD_BLE_MICRO_PRO
-	bool "BLE Micro Pro"
