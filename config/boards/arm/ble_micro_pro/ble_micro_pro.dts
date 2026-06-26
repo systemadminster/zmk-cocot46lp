@@ -1,0 +1,54 @@
+/dts-v1/;
+#include <nordic/nrf52840_qiaa.dtsi>
+
+/ {
+	model = "BLE Micro Pro";
+	compatible = "sekigon,ble-micro-pro";
+
+	chosen {
+		zephyr,sram = &sram0;
+		zephyr,flash = &flash0;
+		zephyr,code-partition = &code_partition;
+	};
+};
+
+&flash0 {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		/* Adafruit nRF52 bootloader occupies 0x00000000..0x00025fff */
+		sd_partition: partition@0 {
+			label = "mbr";
+			reg = <0x00000000 0x00026000>;
+		};
+
+		code_partition: partition@26000 {
+			label = "code_partition";
+			reg = <0x00026000 0x000d2000>;
+		};
+
+		/*
+		 * Storage partition for ZMK settings / BLE bonding.
+		 * Must not overlap with the bootloader's own settings page.
+		 */
+		storage_partition: partition@f8000 {
+			label = "storage";
+			reg = <0x000f8000 0x00008000>;
+		};
+	};
+};
+
+&gpio0 {
+	status = "okay";
+};
+
+&gpio1 {
+	status = "okay";
+};
+
+&usbd {
+	compatible = "nordic,nrf-usbd";
+	status = "okay";
+};

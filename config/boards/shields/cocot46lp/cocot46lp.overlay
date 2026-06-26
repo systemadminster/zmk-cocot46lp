@@ -1,96 +1,79 @@
 #include <dt-bindings/zmk/matrix-transform.h>
 
-// Disable nice_nano's QSPI flash — it uses P0.14, P0.15, P0.17, P0.20
-// which overlap with our matrix column pins.
-// ZMK will fall back to internal flash storage_partition.
-&qspi {
-    status = "disabled";
-};
-
 / {
-    chosen {
-        zmk,kscan = &kscan0;
-        zmk,matrix-transform = &default_transform;
-        zmk,storage = &storage_partition;
-    };
+	chosen {
+		zmk,kscan = &kscan0;
+		zmk,matrix-transform = &default_transform;
+		zmk,storage = &storage_partition;
+	};
 
-    // Matrix transform: 49 keys (matches QMK LAYOUT macro order)
-    //   Row 0: 12 keys → RC(0,0)..RC(0,11)
-    //   Row 1: 12 keys → RC(1,0)..RC(1,11)
-    //   Row 2: 14 keys → RC(2,0)..RC(2,13)
-    //   Row 3: 11 keys → RC(3,0)..RC(3,10)
-    default_transform: keymap_transform_0 {
-        compatible = "zmk,matrix-transform";
-        columns = <14>;
-        rows = <4>;
-        map = <
-            RC(0,0) RC(0,1) RC(0,2) RC(0,3) RC(0,4) RC(0,5) RC(0,6) RC(0,7) RC(0,8) RC(0,9)  RC(0,10) RC(0,11)
-            RC(1,0) RC(1,1) RC(1,2) RC(1,3) RC(1,4) RC(1,5) RC(1,6) RC(1,7) RC(1,8) RC(1,9)  RC(1,10) RC(1,11)
-            RC(2,0) RC(2,1) RC(2,2) RC(2,3) RC(2,4) RC(2,5) RC(2,6) RC(2,7) RC(2,8) RC(2,9)  RC(2,10) RC(2,11) RC(2,12) RC(2,13)
-            RC(3,0) RC(3,1) RC(3,2) RC(3,3) RC(3,4) RC(3,5) RC(3,6) RC(3,7) RC(3,8) RC(3,9)  RC(3,10)
-        >;
-    };
+	default_transform: keymap_transform_0 {
+		compatible = "zmk,matrix-transform";
+		columns = <14>;
+		rows = <4>;
+		map = <
+			RC(0,0) RC(0,1) RC(0,2) RC(0,3) RC(0,4) RC(0,5) RC(0,6) RC(0,7) RC(0,8) RC(0,9)  RC(0,10) RC(0,11)
+			RC(1,0) RC(1,1) RC(1,2) RC(1,3) RC(1,4) RC(1,5) RC(1,6) RC(1,7) RC(1,8) RC(1,9)  RC(1,10) RC(1,11)
+			RC(2,0) RC(2,1) RC(2,2) RC(2,3) RC(2,4) RC(2,5) RC(2,6) RC(2,7) RC(2,8) RC(2,9)  RC(2,10) RC(2,11) RC(2,12) RC(2,13)
+			RC(3,0) RC(3,1) RC(3,2) RC(3,3) RC(3,4) RC(3,5) RC(3,6) RC(3,7) RC(3,8) RC(3,9)  RC(3,10)
+		>;
+	};
 
-    // Phase 1: col2row scan — cols driven, rows sensed (left-half diodes: COL→ROW).
-    // poll-period-ms forces polling mode to avoid GPIO interrupt conflicts
-    // with kscan_row2col which shares the same GPIO pins.
-    kscan_col2row: kscan_col2row {
-        compatible = "zmk,kscan-gpio-matrix";
-        diode-direction = "col2row";
-        poll-period-ms = <10>;
+	kscan_col2row: kscan_col2row {
+		compatible = "zmk,kscan-gpio-matrix";
+		diode-direction = "col2row";
+		poll-period-ms = <10>;
 
-        col-gpios
-            = <&gpio0 20 GPIO_ACTIVE_HIGH>
-            , <&gpio0 19 GPIO_ACTIVE_HIGH>
-            , <&gpio0 18 GPIO_ACTIVE_HIGH>
-            , <&gpio0 17 GPIO_ACTIVE_HIGH>
-            , <&gpio0 16 GPIO_ACTIVE_HIGH>
-            , <&gpio0 15 GPIO_ACTIVE_HIGH>
-            , <&gpio0 14 GPIO_ACTIVE_HIGH>
-            ;
-        row-gpios
-            = <&gpio0 9  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-            , <&gpio0 10 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-            , <&gpio0 11 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-            , <&gpio0 12 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-            ;
-    };
+		col-gpios
+			= <&gpio0 20 GPIO_ACTIVE_HIGH>
+			, <&gpio0 19 GPIO_ACTIVE_HIGH>
+			, <&gpio0 18 GPIO_ACTIVE_HIGH>
+			, <&gpio0 17 GPIO_ACTIVE_HIGH>
+			, <&gpio0 16 GPIO_ACTIVE_HIGH>
+			, <&gpio0 15 GPIO_ACTIVE_HIGH>
+			, <&gpio0 14 GPIO_ACTIVE_HIGH>
+			;
+		row-gpios
+			= <&gpio0 9  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
+			, <&gpio0 10 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
+			, <&gpio0 11 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
+			, <&gpio0 12 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
+			;
+	};
 
-    // Phase 2: row2col scan — rows driven, cols sensed (right-half diodes: ROW→COL).
-    kscan_row2col: kscan_row2col {
-        compatible = "zmk,kscan-gpio-matrix";
-        diode-direction = "row2col";
-        poll-period-ms = <10>;
+	kscan_row2col: kscan_row2col {
+		compatible = "zmk,kscan-gpio-matrix";
+		diode-direction = "row2col";
+		poll-period-ms = <10>;
 
-        row-gpios
-            = <&gpio0 9  GPIO_ACTIVE_HIGH>
-            , <&gpio0 10 GPIO_ACTIVE_HIGH>
-            , <&gpio0 11 GPIO_ACTIVE_HIGH>
-            , <&gpio0 12 GPIO_ACTIVE_HIGH>
-            ;
-        col-gpios
-            = <&gpio0 20 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-            , <&gpio0 19 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-            , <&gpio0 18 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-            , <&gpio0 17 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-            , <&gpio0 16 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-            , <&gpio0 15 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-            , <&gpio0 14 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-            ;
-    };
+		row-gpios
+			= <&gpio0 9  GPIO_ACTIVE_HIGH>
+			, <&gpio0 10 GPIO_ACTIVE_HIGH>
+			, <&gpio0 11 GPIO_ACTIVE_HIGH>
+			, <&gpio0 12 GPIO_ACTIVE_HIGH>
+			;
+		col-gpios
+			= <&gpio0 20 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
+			, <&gpio0 19 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
+			, <&gpio0 18 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
+			, <&gpio0 17 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
+			, <&gpio0 16 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
+			, <&gpio0 15 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
+			, <&gpio0 14 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
+			;
+	};
 
-    // Composite: col2row provides cols 0-6, row2col provides cols 7-13.
-    kscan0: kscan_composite {
-        compatible = "zmk,kscan-composite";
-        rows = <4>;
-        columns = <14>;
+	kscan0: kscan_composite {
+		compatible = "zmk,kscan-composite";
+		rows = <4>;
+		columns = <14>;
 
-        matrix_col2row {
-            kscan = <&kscan_col2row>;
-        };
-        matrix_row2col {
-            kscan = <&kscan_row2col>;
-            column-offset = <7>;
-        };
-    };
+		matrix_col2row {
+			kscan = <&kscan_col2row>;
+		};
+		matrix_row2col {
+			kscan = <&kscan_row2col>;
+			column-offset = <7>;
+		};
+	};
 };
