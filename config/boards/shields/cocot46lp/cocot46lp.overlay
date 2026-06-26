@@ -1,4 +1,4 @@
-#include <dt-bindings/zmk/matrix-transform.h>
+#include <dt-bindings/zmk/matrix_transform.h>
 
 / {
 	chosen {
@@ -73,7 +73,7 @@
 		};
 		matrix_row2col {
 			kscan = <&kscan_row2col>;
-			column-offset = <7>;
+			col-offset = <7>;
 		};
 	};
 };

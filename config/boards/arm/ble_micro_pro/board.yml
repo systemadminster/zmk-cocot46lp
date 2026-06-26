@@ -1,0 +1,7 @@
+board:
+  name: ble_micro_pro
+  full_name: BLE Micro Pro
+  arch: arm
+  vendor: sekigon
+  socs:
+    - name: nrf52840

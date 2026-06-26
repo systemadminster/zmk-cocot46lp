@@ -1,5 +1,3 @@
-CONFIG_SOC_NRF52840_QIAA=y
-
 # BLE
 CONFIG_BT=y
 CONFIG_BT_SMP=y
@@ -8,7 +6,7 @@ CONFIG_BT_PERIPHERAL=y
 # USB HID
 CONFIG_USB_DEVICE_STACK=y
 
-# 32 kHz clock: internal RC oscillator (BMP does not expose 32kHz XTAL pads)
+# 32 kHz clock: internal RC oscillator
 CONFIG_CLOCK_CONTROL_NRF_K32SRC_RC=y
 CONFIG_CLOCK_CONTROL_NRF_K32SRC_250PPM=y
 
