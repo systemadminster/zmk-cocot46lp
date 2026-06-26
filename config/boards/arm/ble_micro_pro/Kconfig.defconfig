@@ -3,10 +3,4 @@ if BOARD_BLE_MICRO_PRO
 config BOARD
 	default "ble_micro_pro"
 
-config SPI
-	default n
-
-config QSPI
-	default n
-
 endif
