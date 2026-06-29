@@ -1,5 +1,17 @@
 #include <dt-bindings/zmk/matrix_transform.h>
 
+/* gpio-hog: drive P0.20 permanently HIGH at boot.
+ * Then use zmk,kscan-gpio-direct to read rows directly.
+ * This separates GPIO output test from ZMK matrix polling logic.
+ */
+&gpio0 {
+	col0_hog: col0_hog {
+		gpio-hog;
+		gpios = <20 0>;
+		output-high;
+	};
+};
+
 / {
 	chosen {
 		zmk,kscan = &kscan_col2row;
@@ -7,25 +19,21 @@
 		zmk,storage = &storage_partition;
 	};
 
-	/* DIAGNOSTIC: 1 col x 4 row matrix. Drive P0.20 HIGH, read rows.
-	 * Press any key in col 0 (leftmost column of the matrix).
-	 * RC(0,0)=A  RC(1,0)=B  RC(2,0)=C  RC(3,0)=D
+	/* P0.09=A  P0.10=B  P0.11=C  P0.12=D
+	 * Press key at (rowN, col0) to get the letter.
+	 * Col0 (P0.20) is held HIGH by gpio-hog above.
 	 */
 	default_transform: keymap_transform_0 {
 		compatible = "zmk,matrix-transform";
-		columns = <1>;
-		rows = <4>;
-		map = < RC(0,0) RC(1,0) RC(2,0) RC(3,0) >;
+		columns = <4>;
+		rows = <1>;
+		map = < RC(0,0) RC(0,1) RC(0,2) RC(0,3) >;
 	};
 
 	kscan_col2row: kscan_col2row {
-		compatible = "zmk,kscan-gpio-matrix";
+		compatible = "zmk,kscan-gpio-direct";
 		wakeup-source;
-		diode-direction = "col2row";
-		poll-period-ms = <10>;
-
-		col-gpios = <&gpio0 20 GPIO_ACTIVE_HIGH>;
-		row-gpios
+		input-gpios
 			= <&gpio0 9  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
 			, <&gpio0 10 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
 			, <&gpio0 11 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
