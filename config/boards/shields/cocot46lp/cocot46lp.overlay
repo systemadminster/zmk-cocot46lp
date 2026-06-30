@@ -6,8 +6,7 @@
 		zmk,matrix-transform = &default_transform;
 		zmk,physical-layout = &default_layout;
 		zmk,storage = &storage_partition;
-		zephyr,shell-uart = &cdc_acm_uart;
-	};
+};
 
 	default_layout: default_layout {
 		compatible = "zmk,physical-layout";
@@ -34,7 +33,6 @@
 	 */
 	kscan0: kscan0 {
 		compatible = "zmk,kscan-gpio-matrix";
-		wakeup-source;
 		diode-direction = "col2row";
 		poll-period-ms = <10>;
 
