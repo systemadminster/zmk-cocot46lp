@@ -20,31 +20,30 @@
 		>;
 	};
 
-	/* Matches QMK/BMPAPI col2row scanning exactly:
-	 * - rows = OUTPUT driven LOW to select (open-drain equivalent)
-	 * - cols = INPUT PULL_UP, reads LOW when key pressed
-	 * diode-direction = "row2col" in ZMK = rows drive, cols sense
+	/* col2row: cols OUTPUT (drive LOW to scan), rows INPUT PULL_UP (read LOW = pressed)
+	 * This matches BMPAPI "col2row" naming.
+	 * Previously untested with NFC fix (P0.09/P0.10 now work as GPIO).
 	 */
 	kscan0: kscan0 {
 		compatible = "zmk,kscan-gpio-matrix";
 		wakeup-source;
-		diode-direction = "row2col";
+		diode-direction = "col2row";
 		poll-period-ms = <10>;
 
 		row-gpios
-			= <&gpio0 9  GPIO_ACTIVE_LOW>
-			, <&gpio0 10 GPIO_ACTIVE_LOW>
-			, <&gpio0 11 GPIO_ACTIVE_LOW>
-			, <&gpio0 12 GPIO_ACTIVE_LOW>
+			= <&gpio0 9  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
+			, <&gpio0 10 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
+			, <&gpio0 11 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
+			, <&gpio0 12 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
 			;
 		col-gpios
-			= <&gpio0 20 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-			, <&gpio0 19 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-			, <&gpio0 18 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-			, <&gpio0 17 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-			, <&gpio0 16 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-			, <&gpio0 15 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-			, <&gpio0 14 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
+			= <&gpio0 20 GPIO_ACTIVE_LOW>
+			, <&gpio0 19 GPIO_ACTIVE_LOW>
+			, <&gpio0 18 GPIO_ACTIVE_LOW>
+			, <&gpio0 17 GPIO_ACTIVE_LOW>
+			, <&gpio0 16 GPIO_ACTIVE_LOW>
+			, <&gpio0 15 GPIO_ACTIVE_LOW>
+			, <&gpio0 14 GPIO_ACTIVE_LOW>
 			;
 	};
 
