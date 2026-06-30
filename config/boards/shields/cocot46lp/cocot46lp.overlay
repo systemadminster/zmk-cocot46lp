@@ -27,28 +27,7 @@
 		>;
 	};
 
-	/* Duplex matrix composite:
-	 * phase1 (row2col): rows OUTPUT LOW, cols INPUT PULL_UP — cols 0-6
-	 * phase2 (col2row): cols OUTPUT LOW, rows INPUT PULL_UP — virtual cols 7-13
-	 */
-	kscan0: kscan_composite {
-		compatible = "zmk,kscan-composite";
-		rows = <4>;
-		columns = <14>;
-
-		kscan_phase1_node {
-			kscan = <&kscan_phase1>;
-			row-offset = <0>;
-			column-offset = <0>;
-		};
-		kscan_phase2_node {
-			kscan = <&kscan_phase2>;
-			row-offset = <0>;
-			column-offset = <7>;
-		};
-	};
-
-	kscan_phase1: kscan_phase1 {
+	kscan0: kscan0 {
 		compatible = "zmk,kscan-gpio-matrix";
 		diode-direction = "row2col";
 		poll-period-ms = <10>;
@@ -69,27 +48,4 @@
 			, <&gpio0 14 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
 			;
 	};
-
-	kscan_phase2: kscan_phase2 {
-		compatible = "zmk,kscan-gpio-matrix";
-		diode-direction = "col2row";
-		poll-period-ms = <10>;
-
-		row-gpios
-			= <&gpio0 9  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-			, <&gpio0 10 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-			, <&gpio0 11 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-			, <&gpio0 12 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
-			;
-		col-gpios
-			= <&gpio0 20 GPIO_ACTIVE_LOW>
-			, <&gpio0 19 GPIO_ACTIVE_LOW>
-			, <&gpio0 18 GPIO_ACTIVE_LOW>
-			, <&gpio0 17 GPIO_ACTIVE_LOW>
-			, <&gpio0 16 GPIO_ACTIVE_LOW>
-			, <&gpio0 15 GPIO_ACTIVE_LOW>
-			, <&gpio0 14 GPIO_ACTIVE_LOW>
-			;
-	};
-
 };

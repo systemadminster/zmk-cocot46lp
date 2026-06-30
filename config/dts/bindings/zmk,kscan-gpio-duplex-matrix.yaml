@@ -1,0 +1,23 @@
+description: |
+  Duplex GPIO matrix keyboard scanner.
+  Phase 1 drives each row LOW and senses cols (row2col).
+  Phase 2 drives each col LOW and senses rows (col2row).
+  Both phases run sequentially so GPIO pins never conflict.
+
+compatible: "zmk,kscan-gpio-duplex-matrix"
+
+properties:
+  row-gpios:
+    type: phandle-array
+    required: true
+    description: Row GPIO pins (used as OUTPUT in phase 1, INPUT in phase 2)
+
+  col-gpios:
+    type: phandle-array
+    required: true
+    description: Column GPIO pins (used as INPUT in phase 1, OUTPUT in phase 2)
+
+  poll-period-ms:
+    type: int
+    default: 10
+    description: Polling interval in milliseconds
