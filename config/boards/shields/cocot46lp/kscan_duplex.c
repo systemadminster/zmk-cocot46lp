@@ -72,6 +72,7 @@ static void kscan_duplex_poll_handler(struct k_work *work)
                 } else {
                     data->matrix_state[r] &= ~BIT(c);
                 }
+                LOG_DBG("P1 row=%d col=%d %s", r, c, pressed ? "PRESS" : "RELEASE");
                 if (data->callback) {
                     data->callback(dev, r, c, pressed);
                 }
@@ -105,6 +106,7 @@ static void kscan_duplex_poll_handler(struct k_work *work)
                 } else {
                     data->matrix_state[r] &= ~BIT(vcol);
                 }
+                LOG_DBG("P2 row=%d col=%d(vc%d) %s", r, c, vcol, pressed ? "PRESS" : "RELEASE");
                 if (data->callback) {
                     data->callback(dev, r, vcol, pressed);
                 }
