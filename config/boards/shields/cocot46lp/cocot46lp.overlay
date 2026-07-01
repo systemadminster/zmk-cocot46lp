@@ -29,7 +29,9 @@
 
 	kscan0: kscan0 {
 		compatible = "zmk,kscan-gpio-duplex-matrix";
-		poll-period-ms = <10>;
+		/* huge period: freeze pins after one pass so the GPIO shell
+		 * can manually drive/read pins without the driver fighting it */
+		poll-period-ms = <3600000>;
 
 		row-gpios
 			= <&gpio0 9  0>
