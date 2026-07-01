@@ -1,2 +1,9 @@
 config SHIELD_COCOT46LP
-    def_bool $(shields_list_contains,cocot46lp)
+	def_bool $(shields_list_contains,cocot46lp)
+
+config KSCAN_GPIO_DUPLEX_MATRIX
+	bool "GPIO duplex matrix keyboard scanner"
+	default y
+	depends on DT_HAS_ZMK_KSCAN_GPIO_DUPLEX_MATRIX_ENABLED
+	select KSCAN
+	select ZMK_KSCAN
