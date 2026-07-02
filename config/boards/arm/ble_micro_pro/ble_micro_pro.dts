@@ -18,24 +18,40 @@
 		#address-cells = <1>;
 		#size-cells = <1>;
 
-		/* Adafruit nRF52 bootloader occupies 0x00000000..0x00025fff */
+		/*
+		 * MBR + room for a SoftDevice, occupies 0x0..0x25fff.
+		 * (Adafruit_nRF52_Bootloader linker/nrf52840.ld)
+		 */
 		sd_partition: partition@0 {
 			label = "mbr";
 			reg = <0x00000000 0x00026000>;
 		};
 
+		/*
+		 * The Adafruit bootloader itself does NOT live at the start of
+		 * flash — its actual code, config, MBR params page, and DFU
+		 * settings page live at the very END of flash:
+		 *   bootloader code:   0xf4000-0xfe000
+		 *   BOOTLOADER_CONFIG: 0xfd800-0xfe000
+		 *   MBR_PARAMS_PAGE:   0xfe000-0xff000
+		 *   BOOTLOADER_SETTINGS: 0xff000-0x100000
+		 * (verified against Adafruit_nRF52_Bootloader/linker/nrf52840.ld)
+		 *
+		 * Our old storage_partition at 0xf8000-0x100000 overlapped ALL
+		 * of that — every ZMK settings/BLE-bonding write there was
+		 * corrupting/hitting write-protected bootloader flash, which is
+		 * why enabling BLE hung the whole board (USB included) with no
+		 * usable app ever running again. code_partition and storage
+		 * partition must both stay below 0xf4000.
+		 */
 		code_partition: partition@26000 {
 			label = "code_partition";
-			reg = <0x00026000 0x000d2000>;
+			reg = <0x00026000 0x000be000>;
 		};
 
-		/*
-		 * Storage partition for ZMK settings / BLE bonding.
-		 * Must not overlap with the bootloader's own settings page.
-		 */
-		storage_partition: partition@f8000 {
+		storage_partition: partition@e4000 {
 			label = "storage";
-			reg = <0x000f8000 0x00008000>;
+			reg = <0x000e4000 0x00010000>;
 		};
 	};
 };

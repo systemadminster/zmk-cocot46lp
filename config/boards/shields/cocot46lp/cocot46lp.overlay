@@ -2,10 +2,17 @@
 
 / {
 	chosen {
-		/* DIAG: kscan/physical-layout refs dropped — kscan0 is disabled
-		 * for this isolation test (see kscan0 node below). */
+		zmk,kscan = &kscan0;
 		zmk,matrix-transform = &default_transform;
+		zmk,physical-layout = &default_layout;
 		zmk,storage = &storage_partition;
+	};
+
+	default_layout: default_layout {
+		compatible = "zmk,physical-layout";
+		display-name = "Default";
+		transform = <&default_transform>;
+		kscan = <&kscan0>;
 	};
 
 	/*
@@ -31,10 +38,6 @@
 
 	kscan0: kscan0 {
 		compatible = "zmk,kscan-gpio-duplex-matrix";
-		/* DIAG: disabled to isolate whether our custom kscan driver's
-		 * GPIO handling conflicts with BLE init. Keys won't work in
-		 * this build — only testing whether USB/BLE come up at all. */
-		status = "disabled";
 		poll-period-ms = <10>;
 
 		/*
