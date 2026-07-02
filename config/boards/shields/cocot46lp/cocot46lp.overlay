@@ -38,6 +38,10 @@
 
 	kscan0: kscan0 {
 		compatible = "zmk,kscan-gpio-duplex-matrix";
+		/* DIAG: disabled to isolate whether our custom kscan driver's
+		 * GPIO handling conflicts with BLE init. Keys won't work in
+		 * this build — only testing whether USB/BLE come up at all. */
+		status = "disabled";
 		poll-period-ms = <10>;
 
 		/*
