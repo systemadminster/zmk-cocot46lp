@@ -89,5 +89,6 @@ zephyr_udc0: &usbd {
 / {
 	chosen {
 		zephyr,console = &cdc_acm_uart;
+		zephyr,shell-uart = &cdc_acm_uart;
 	};
 };
