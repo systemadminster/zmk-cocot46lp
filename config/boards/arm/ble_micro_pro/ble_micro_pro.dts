@@ -56,22 +56,28 @@
 	};
 };
 
-/* Zephyr 4.x gpio_nrfx requires each GPIO bank to reference a GPIOTE instance */
+/*
+ * DIAG: nice!nano's board.dts (the most-used ZMK+nRF52840+BLE board)
+ * just does `&gpiote { status = "okay"; }; &gpio0 { status = "okay"; };
+ * &gpio1 { status = "okay"; };` with NO explicit gpiote-instance
+ * property at all. We had forced BOTH gpio0 and gpio1 onto the same
+ * &gpiote0 instance (added earlier for an unrelated build error) —
+ * testing whether that static dual-assignment is what's starving BLE
+ * of a GPIOTE channel it needs at radio init.
+ */
 &gpiote0 {
 	status = "okay";
 };
 
 &gpio0 {
 	status = "okay";
-	gpiote-instance = <&gpiote0>;
 };
 
 &gpio1 {
 	status = "okay";
-	gpiote-instance = <&gpiote0>;
 };
 
-&usbd {
+zephyr_udc0: &usbd {
 	compatible = "nordic,nrf-usbd";
 	status = "okay";
 
