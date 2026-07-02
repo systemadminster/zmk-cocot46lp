@@ -163,7 +163,7 @@ static int kscan_duplex_configure(const struct device *dev,
 static int kscan_duplex_enable_callback(const struct device *dev)
 {
     struct kscan_duplex_data *data = dev->data;
-    LOG_INF("=== KSCAN: scan starts in 3s, then freezes (huge poll period). ===");
+    LOG_INF("=== KSCAN: scan starts in 3s ===");
     k_work_reschedule(&data->poll_work, K_SECONDS(3));
     return 0;
 }

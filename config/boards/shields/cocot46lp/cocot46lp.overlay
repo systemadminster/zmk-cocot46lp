@@ -6,7 +6,6 @@
 		zmk,matrix-transform = &default_transform;
 		zmk,physical-layout = &default_layout;
 		zmk,storage = &storage_partition;
-		zephyr,shell-uart = &cdc_acm_uart;
 	};
 
 	default_layout: default_layout {
@@ -30,24 +29,30 @@
 
 	kscan0: kscan0 {
 		compatible = "zmk,kscan-gpio-duplex-matrix";
-		/* huge period: freeze pins after one pass so the GPIO shell
-		 * can manually drive/read pins without the driver fighting it */
-		poll-period-ms = <3600000>;
+		poll-period-ms = <10>;
 
+		/*
+		 * CONFIG.JSN row_pins/col_pins use BMP silkscreen "PINn" labels,
+		 * NOT raw nRF52 P0.n numbers. Translated via the official BMP
+		 * pin assign diagram (sekigon-gonnoc/BLE-Micro-Pro "pin assign.jpg"):
+		 *   PIN9=P0.22  PIN10=P0.23 PIN11=P1.00 PIN12=P1.03
+		 *   PIN20=P0.05 PIN19=P0.00 PIN18=P0.30 PIN17=P0.03
+		 *   PIN16=P1.14 PIN15=P1.15 PIN14=P0.10
+		 */
 		row-gpios
-			= <&gpio0 9  0>
-			, <&gpio0 10 0>
-			, <&gpio0 11 0>
-			, <&gpio0 12 0>
+			= <&gpio0 22 0>
+			, <&gpio0 23 0>
+			, <&gpio1 0  0>
+			, <&gpio1 3  0>
 			;
 		col-gpios
-			= <&gpio0 20 0>
-			, <&gpio0 19 0>
-			, <&gpio0 18 0>
-			, <&gpio0 17 0>
-			, <&gpio0 16 0>
-			, <&gpio0 15 0>
-			, <&gpio0 14 0>
+			= <&gpio0 5  0>
+			, <&gpio0 0  0>
+			, <&gpio0 30 0>
+			, <&gpio0 3  0>
+			, <&gpio1 14 0>
+			, <&gpio1 15 0>
+			, <&gpio0 10 0>
 			;
 	};
 };
