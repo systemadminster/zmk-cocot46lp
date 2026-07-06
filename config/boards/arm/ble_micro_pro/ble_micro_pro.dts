@@ -19,34 +19,27 @@
 		#size-cells = <1>;
 
 		/*
-		 * MBR + room for a SoftDevice, occupies 0x0..0x25fff.
-		 * (Adafruit_nRF52_Bootloader linker/nrf52840.ld)
+		 * MBR only (0x0..0x1000). This board previously ran QMK BLE, so a
+		 * Nordic S140 SoftDevice used to occupy 0x1000..0x26000 and the
+		 * bootloader placed the app right after it, at 0x26000. We erased
+		 * that stale SoftDevice (erase_softdevice.c); with no SoftDevice
+		 * present the bootloader now expects the app immediately after the
+		 * MBR, at 0x1000 — so the app must live there.
 		 */
 		sd_partition: partition@0 {
 			label = "mbr";
-			reg = <0x00000000 0x00026000>;
+			reg = <0x00000000 0x00001000>;
 		};
 
 		/*
-		 * The Adafruit bootloader itself does NOT live at the start of
-		 * flash — its actual code, config, MBR params page, and DFU
-		 * settings page live at the very END of flash:
-		 *   bootloader code:   0xf4000-0xfe000
-		 *   BOOTLOADER_CONFIG: 0xfd800-0xfe000
-		 *   MBR_PARAMS_PAGE:   0xfe000-0xff000
-		 *   BOOTLOADER_SETTINGS: 0xff000-0x100000
-		 * (verified against Adafruit_nRF52_Bootloader/linker/nrf52840.ld)
-		 *
-		 * Our old storage_partition at 0xf8000-0x100000 overlapped ALL
-		 * of that — every ZMK settings/BLE-bonding write there was
-		 * corrupting/hitting write-protected bootloader flash, which is
-		 * why enabling BLE hung the whole board (USB included) with no
-		 * usable app ever running again. code_partition and storage
-		 * partition must both stay below 0xf4000.
+		 * App at 0x1000 (right after the MBR), clean no-SoftDevice layout.
+		 * The Adafruit/BMP bootloader lives at the END of flash (~0xf4000
+		 * up), and its settings/params pages are the very top pages, so
+		 * code_partition and storage must both stay below ~0xf4000.
 		 */
-		code_partition: partition@26000 {
+		code_partition: partition@1000 {
 			label = "code_partition";
-			reg = <0x00026000 0x000be000>;
+			reg = <0x00001000 0x000e3000>;
 		};
 
 		storage_partition: partition@e4000 {
