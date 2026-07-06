@@ -49,6 +49,15 @@
 };
 
 /*
+ * Reserve the top 256 bytes of the 256 KB SRAM (end sram0 at 0x2003FF00) so
+ * fault_hook.c can stash the BLE crash info at a fixed address the kernel never
+ * touches. Recovery is then a single short SWD read of 8 words at 0x2003FF00.
+ */
+&sram0 {
+	reg = <0x20000000 0x0003FF00>;
+};
+
+/*
  * DIAG: nice!nano's board.dts (the most-used ZMK+nRF52840+BLE board)
  * just does `&gpiote { status = "okay"; }; &gpio0 { status = "okay"; };
  * &gpio1 { status = "okay"; };` with NO explicit gpiote-instance
