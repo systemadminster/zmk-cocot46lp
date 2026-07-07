@@ -32,18 +32,22 @@
 		};
 
 		/*
-		 * App at 0x26000 (right after MBR+SoftDevice). Bootloader + its
-		 * settings/params pages live at the very END of flash (~0xf4000 up),
-		 * so code_partition and storage must both stay below ~0xf4000.
+		 * On-chip evidence: UICR.NRFFW[0] reads 0x000e0000 (logged by
+		 * sd_probe as nrffw0=000e0000), i.e. the MBR forwards to a bootloader
+		 * region that begins at 0xe0000 — NOT 0xf4000 as we had assumed. Our
+		 * old storage at 0xe4000-0xf4000 therefore sat INSIDE the bootloader
+		 * region, so the first BLE identity/bond write corrupted the
+		 * bootloader and bricked the boot (the total hang we see only with
+		 * BLE=y). Move storage well below 0xe0000.
 		 */
 		code_partition: partition@26000 {
 			label = "code_partition";
-			reg = <0x00026000 0x000be000>;
+			reg = <0x00026000 0x000aa000>;   /* 0x26000..0xd0000 */
 		};
 
-		storage_partition: partition@e4000 {
+		storage_partition: partition@d0000 {
 			label = "storage";
-			reg = <0x000e4000 0x00010000>;
+			reg = <0x000d0000 0x00008000>;   /* 0xd0000..0xd8000, clear of bootloader */
 		};
 	};
 };
