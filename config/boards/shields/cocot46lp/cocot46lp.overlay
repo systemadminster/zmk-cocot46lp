@@ -68,11 +68,17 @@
 	/*
 	 * AZ1UBALL trackball -> ZMK pointing. The listener forwards the
 	 * driver's relative X/Y (and click) into ZMK's input pipeline.
+	 *
+	 * DIAG fw74: listener disabled together with the trackball node below —
+	 * the az1uball init I2C write is the prime suspect for the pre-USB boot
+	 * hang. bus_probe.c logs the raw SDA/SCL levels instead.
 	 */
+	/*
 	trackball_input_listener {
 		compatible = "zmk,input-listener";
 		device = <&trackball>;
 	};
+	*/
 };
 
 /*
@@ -108,8 +114,12 @@
 	pinctrl-1 = <&i2c0_sleep>;
 	pinctrl-names = "default", "sleep";
 
+	/* DIAG fw74: node commented out so no I2C transfer happens at boot.
+	 * TWIM itself stays enabled to test whether enabling it alone is safe. */
+	/*
 	trackball: trackball@a {
 		compatible = "palette,az1uball";
 		reg = <0x0A>;
 	};
+	*/
 };
