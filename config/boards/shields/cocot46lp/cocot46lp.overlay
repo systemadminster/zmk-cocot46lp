@@ -68,17 +68,11 @@
 	/*
 	 * AZ1UBALL trackball -> ZMK pointing. The listener forwards the
 	 * driver's relative X/Y (and click) into ZMK's input pipeline.
-	 *
-	 * DIAG fw74: listener disabled together with the trackball node below —
-	 * the az1uball init I2C write is the prime suspect for the pre-USB boot
-	 * hang. bus_probe.c logs the raw SDA/SCL levels instead.
 	 */
-	/*
 	trackball_input_listener {
 		compatible = "zmk,input-listener";
 		device = <&trackball>;
 	};
-	*/
 };
 
 /*
@@ -90,15 +84,23 @@
  *   SDA = PIN5 = P0.18
  *   SCL = PIN6 = P0.16
  */
+/*
+ * fw76: use TWIM1 (i2c1) instead of TWIM0 (i2c0). Merely enabling i2c0 with
+ * BLE=y hangs the boot pre-USB (fw74/75 proved it: no transfers, no driver,
+ * sleep on or off — dead either way; fw70/71 without TWIM were fine). TWIM0
+ * likely collides with the BLE controller over a shared resource (IRQ/PPI/
+ * anomaly workaround). nRF pins are freely mappable, so the SAME physical
+ * pins (SDA=P0.18, SCL=P0.16) move to the TWIM1 instance.
+ */
 &pinctrl {
-	i2c0_default: i2c0_default {
+	i2c1_default: i2c1_default {
 		group1 {
 			psels = <NRF_PSEL(TWIM_SDA, 0, 18)>,
 			        <NRF_PSEL(TWIM_SCL, 0, 16)>;
 		};
 	};
 
-	i2c0_sleep: i2c0_sleep {
+	i2c1_sleep: i2c1_sleep {
 		group1 {
 			psels = <NRF_PSEL(TWIM_SDA, 0, 18)>,
 			        <NRF_PSEL(TWIM_SCL, 0, 16)>;
@@ -107,19 +109,15 @@
 	};
 };
 
-&i2c0 {
+&i2c1 {
 	compatible = "nordic,nrf-twim";
 	status = "okay";
-	pinctrl-0 = <&i2c0_default>;
-	pinctrl-1 = <&i2c0_sleep>;
+	pinctrl-0 = <&i2c1_default>;
+	pinctrl-1 = <&i2c1_sleep>;
 	pinctrl-names = "default", "sleep";
 
-	/* DIAG fw74: node commented out so no I2C transfer happens at boot.
-	 * TWIM itself stays enabled to test whether enabling it alone is safe. */
-	/*
 	trackball: trackball@a {
 		compatible = "palette,az1uball";
 		reg = <0x0A>;
 	};
-	*/
 };
