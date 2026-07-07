@@ -2,10 +2,16 @@ manifest:
   remotes:
     - name: zmkfirmware
       url-base: https://github.com/zmkfirmware
+    - name: kzyz
+      url-base: https://github.com/kzyz
   projects:
     - name: zmk
       remote: zmkfirmware
       revision: main
       import: app/west.yml
+    # AZ1UBALL (PIM447-compatible I2C trackball) input driver
+    - name: zmk-az1uball-driver
+      remote: kzyz
+      revision: main
   self:
     path: config

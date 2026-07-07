@@ -84,10 +84,13 @@ zephyr_udc0: &usbd {
 };
 
 /*
- * No zephyr,console chosen here: production build has USB logging off, and a
- * chosen console pointing at a CDC ACM node without CONFIG_USB_CDC_ACM breaks
- * the build. To re-enable debug logging, restore in cocot46lp.conf:
- *   CONFIG_LOG=y CONFIG_USB_CDC_ACM=y CONFIG_ZMK_USB_LOGGING=y
- *   CONFIG_ZMK_LOG_LEVEL_DBG=y CONFIG_LOG_MODE_IMMEDIATE=y
- * and add back:  / { chosen { zephyr,console = &cdc_acm_uart; }; };
+ * BRING-UP: USB console re-enabled for AZ1UBALL debugging (paired with the
+ * logging configs in cocot46lp.conf). Remove both together for production —
+ * a chosen console pointing at CDC ACM without CONFIG_USB_CDC_ACM breaks the
+ * build.
  */
+/ {
+	chosen {
+		zephyr,console = &cdc_acm_uart;
+	};
+};
