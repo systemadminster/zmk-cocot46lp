@@ -84,13 +84,8 @@ zephyr_udc0: &usbd {
 };
 
 /*
- * BRING-UP: USB console re-enabled for AZ1UBALL debugging (paired with the
- * logging configs in cocot46lp.conf). Remove both together for production —
- * a chosen console pointing at CDC ACM without CONFIG_USB_CDC_ACM breaks the
- * build.
+ * Console chosen removed (paired with logging configs off in cocot46lp.conf).
+ * NOTE: every build with TWIM enabled AND immediate USB logging died pre-USB
+ * (fw72-76); logging without TWIM (fw70) and TWIM... see conf. Do not re-add
+ * the console without checking that pairing.
  */
-/ {
-	chosen {
-		zephyr,console = &cdc_acm_uart;
-	};
-};
