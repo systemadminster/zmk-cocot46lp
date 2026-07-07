@@ -4,3 +4,4 @@ zephyr_library_sources(kscan_duplex.c)
 # auto-unlocks any freshly flashed BMP for SWD debugging.
 zephyr_library_sources(approtect_unlock.c)
 zephyr_library_sources(bus_probe.c)
+zephyr_library_sources(i2c_scan.c)
