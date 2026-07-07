@@ -84,8 +84,12 @@ zephyr_udc0: &usbd {
 };
 
 /*
- * Console chosen removed (paired with logging configs off in cocot46lp.conf).
- * NOTE: every build with TWIM enabled AND immediate USB logging died pre-USB
- * (fw72-76); logging without TWIM (fw70) and TWIM... see conf. Do not re-add
- * the console without checking that pairing.
+ * USB console for DEFERRED logging (fw78). PROVEN: TWIM + LOG_MODE_IMMEDIATE
+ * deadlocks the boot pre-USB (fw72-76) — never combine those two. Deferred
+ * mode (no LOG_MODE_IMMEDIATE in conf) buffers logs safely.
  */
+/ {
+	chosen {
+		zephyr,console = &cdc_acm_uart;
+	};
+};
