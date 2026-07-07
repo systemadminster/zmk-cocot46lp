@@ -52,14 +52,6 @@
 	};
 };
 
-/*
- * Reserve the top 256 bytes of the 256 KB SRAM (end sram0 at 0x2003FF00) so
- * fault_hook.c can stash the BLE crash info at a fixed address the kernel never
- * touches. Recovery is then a single short SWD read of 8 words at 0x2003FF00.
- */
-&sram0 {
-	reg = <0x20000000 0x0003FF00>;
-};
 
 /*
  * DIAG: nice!nano's board.dts (the most-used ZMK+nRF52840+BLE board)
@@ -91,8 +83,11 @@ zephyr_udc0: &usbd {
 	};
 };
 
-/ {
-	chosen {
-		zephyr,console = &cdc_acm_uart;
-	};
-};
+/*
+ * No zephyr,console chosen here: production build has USB logging off, and a
+ * chosen console pointing at a CDC ACM node without CONFIG_USB_CDC_ACM breaks
+ * the build. To re-enable debug logging, restore in cocot46lp.conf:
+ *   CONFIG_LOG=y CONFIG_USB_CDC_ACM=y CONFIG_ZMK_USB_LOGGING=y
+ *   CONFIG_ZMK_LOG_LEVEL_DBG=y CONFIG_LOG_MODE_IMMEDIATE=y
+ * and add back:  / { chosen { zephyr,console = &cdc_acm_uart; }; };
+ */
