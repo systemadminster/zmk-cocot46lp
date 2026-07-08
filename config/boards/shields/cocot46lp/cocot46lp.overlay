@@ -1,4 +1,6 @@
 #include <dt-bindings/zmk/matrix_transform.h>
+/* Defines the zip_* input processor nodes (zip_xy_scaler etc.) */
+#include <input/processors.dtsi>
 
 / {
 	chosen {
