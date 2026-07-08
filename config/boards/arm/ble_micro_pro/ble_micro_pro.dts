@@ -84,12 +84,8 @@ zephyr_udc0: &usbd {
 };
 
 /*
- * USB console for DEFERRED logging (fw78). PROVEN: TWIM + LOG_MODE_IMMEDIATE
- * deadlocks the boot pre-USB (fw72-76) — never combine those two. Deferred
- * mode (no LOG_MODE_IMMEDIATE in conf) buffers logs safely.
+ * PRODUCTION: no console chosen (logging off in cocot46lp.conf).
+ * To re-enable debug logging: add the LOG/CDC configs in conf (deferred mode
+ * ONLY — TWIM + CONFIG_LOG_MODE_IMMEDIATE deadlocks the boot) and restore:
+ *   / { chosen { zephyr,console = &cdc_acm_uart; }; };
  */
-/ {
-	chosen {
-		zephyr,console = &cdc_acm_uart;
-	};
-};
