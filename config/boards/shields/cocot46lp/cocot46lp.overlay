@@ -1,4 +1,5 @@
 #include <dt-bindings/zmk/matrix_transform.h>
+#include <dt-bindings/zmk/input_transform.h>
 
 / {
 	chosen {
@@ -68,10 +69,15 @@
 	/*
 	 * AZ1UBALL trackball -> ZMK pointing. The listener forwards the
 	 * driver's relative X/Y (and click) into ZMK's input pipeline.
+	 *
+	 * The raw counts are tiny, so scale them up. zip_xy_scaler <mul div>
+	 * multiplies movement by mul/div; 6/1 is a good starting speed
+	 * (raise mul for faster, lower for slower).
 	 */
 	trackball_input_listener {
 		compatible = "zmk,input-listener";
 		device = <&trackball>;
+		input-processors = <&zip_xy_scaler 6 1>;
 	};
 };
 
