@@ -1,20 +1,91 @@
 #include <dt-bindings/zmk/matrix_transform.h>
 /* Defines the zip_* input processor nodes (zip_xy_scaler etc.) */
 #include <input/processors.dtsi>
+/* Defines &key_physical_attrs for the physical layout (ZMK Studio) */
+#include <physical_layouts.dtsi>
 
 / {
 	chosen {
 		zmk,kscan = &kscan0;
-		zmk,matrix-transform = &default_transform;
+		/*
+		 * NO zmk,matrix-transform here on purpose: ZMK Studio requires the
+		 * transform to come from the selected physical layout's `transform`
+		 * property, not a chosen. default_layout below references it.
+		 */
 		zmk,physical-layout = &default_layout;
 		zmk,storage = &storage_partition;
 	};
 
+	/*
+	 * Physical layout with per-key coordinates (1/100 keyunit) so ZMK Studio
+	 * can render and remap the board. Order MUST match the keymap bindings
+	 * and the transform map: row0 (12), row1 (12), row2 (6 left + 2 center +
+	 * 6 right = 14), thumbs (4 left + 4 right = 8) => 46 keys. Coordinates are
+	 * an approximate column-staggered cocot46lp shape (functional for Studio;
+	 * refine later if desired).
+	 */
 	default_layout: default_layout {
 		compatible = "zmk,physical-layout";
-		display-name = "Default";
+		display-name = "cocot46lp";
 		transform = <&default_transform>;
 		kscan = <&kscan0>;
+		keys
+			/* row 0 (left: gesc Q W E R T) */
+			= <&key_physical_attrs 100 100    0   27 0 0 0>
+			, <&key_physical_attrs 100 100  100   27 0 0 0>
+			, <&key_physical_attrs 100 100  200   13 0 0 0>
+			, <&key_physical_attrs 100 100  300    0 0 0 0>
+			, <&key_physical_attrs 100 100  400   13 0 0 0>
+			, <&key_physical_attrs 100 100  500   27 0 0 0>
+			/* row 0 (right: Y U I O P GRAVE) */
+			, <&key_physical_attrs 100 100  850   27 0 0 0>
+			, <&key_physical_attrs 100 100  950   13 0 0 0>
+			, <&key_physical_attrs 100 100 1050    0 0 0 0>
+			, <&key_physical_attrs 100 100 1150   13 0 0 0>
+			, <&key_physical_attrs 100 100 1250   27 0 0 0>
+			, <&key_physical_attrs 100 100 1350   27 0 0 0>
+			/* row 1 (left: LCTRL A S D F G) */
+			, <&key_physical_attrs 100 100    0  127 0 0 0>
+			, <&key_physical_attrs 100 100  100  127 0 0 0>
+			, <&key_physical_attrs 100 100  200  113 0 0 0>
+			, <&key_physical_attrs 100 100  300  100 0 0 0>
+			, <&key_physical_attrs 100 100  400  113 0 0 0>
+			, <&key_physical_attrs 100 100  500  127 0 0 0>
+			/* row 1 (right: H J K L SEMI SQT) */
+			, <&key_physical_attrs 100 100  850  127 0 0 0>
+			, <&key_physical_attrs 100 100  950  113 0 0 0>
+			, <&key_physical_attrs 100 100 1050  100 0 0 0>
+			, <&key_physical_attrs 100 100 1150  113 0 0 0>
+			, <&key_physical_attrs 100 100 1250  127 0 0 0>
+			, <&key_physical_attrs 100 100 1350  127 0 0 0>
+			/* row 2 (left: LALT Z X C V B) */
+			, <&key_physical_attrs 100 100    0  227 0 0 0>
+			, <&key_physical_attrs 100 100  100  227 0 0 0>
+			, <&key_physical_attrs 100 100  200  213 0 0 0>
+			, <&key_physical_attrs 100 100  300  200 0 0 0>
+			, <&key_physical_attrs 100 100  400  213 0 0 0>
+			, <&key_physical_attrs 100 100  500  227 0 0 0>
+			/* row 2 center (mkp LCLK, BSPC) */
+			, <&key_physical_attrs 100 100  600  285 0 0 0>
+			, <&key_physical_attrs 100 100  700  285 0 0 0>
+			/* row 2 (right: N M COMMA DOT FSLH EQUAL) */
+			, <&key_physical_attrs 100 100  850  227 0 0 0>
+			, <&key_physical_attrs 100 100  950  213 0 0 0>
+			, <&key_physical_attrs 100 100 1050  200 0 0 0>
+			, <&key_physical_attrs 100 100 1150  213 0 0 0>
+			, <&key_physical_attrs 100 100 1250  227 0 0 0>
+			, <&key_physical_attrs 100 100 1350  227 0 0 0>
+			/* thumbs left (RGUI, mo1, SPACE, TAB) */
+			, <&key_physical_attrs 100 100  250  345 0 0 0>
+			, <&key_physical_attrs 100 100  350  360 0 0 0>
+			, <&key_physical_attrs 100 100  450  370 0 0 0>
+			, <&key_physical_attrs 100 100  550  360 0 0 0>
+			/* thumbs right (ENTER, SPACE, mo2, DEL) */
+			, <&key_physical_attrs 100 100  800  360 0 0 0>
+			, <&key_physical_attrs 100 100  900  370 0 0 0>
+			, <&key_physical_attrs 100 100 1000  360 0 0 0>
+			, <&key_physical_attrs 100 100 1100  345 0 0 0>
+			;
 	};
 
 	/*

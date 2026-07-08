@@ -40,6 +40,7 @@ jobs:
         run: |
           west build -s zmk/app \
             -b ble_micro_pro \
+            -S studio-rpc-usb-uart \
             -- \
             -DSHIELD=cocot46lp \
             -DZMK_CONFIG="${GITHUB_WORKSPACE}/config"
