@@ -15,7 +15,7 @@
 &kp LALT &kp Z    &kp X    &kp C    &kp V    &kp B      &mkp LCLK &kp BSPC &kp N   &kp M    &kp COMMA &kp DOT &kp FSLH &kp EQUAL
          &kp RGUI &mo 1    &kp SPACE &kp TAB             &kp ENTER &kp SPACE &mo 2 &kp DEL
             >;
-            sensor-bindings = <&scroll_encoder>;
+            sensor-bindings = <&inc_dec_kp C_VOL_UP C_VOL_DN>;
         };
 
         lower_layer {
@@ -25,7 +25,7 @@
 &kp INS  &none    &none    &none    &none    &none      &mkp LCLK &mkp RCLK &none  &kp LEFT &kp DOWN &kp RIGHT &kp BSLH &kp NON_US_HASH
          &none    &none    &kp SPACE &kp LGUI                     &kp ENTER &kp SPACE &none &none
             >;
-            sensor-bindings = <&scroll_encoder>;
+            sensor-bindings = <&inc_dec_kp C_VOL_UP C_VOL_DN>;
         };
 
         raise_layer {
@@ -35,7 +35,7 @@
 &none    &none    &none    &none    &none    &none      &mkp LCLK &mkp RCLK &none   &none    &none    &none    &none    &none
          &kp LGUI &none    &kp SPACE &kp LGUI                     &kp ENTER &kp SPACE &none &kp DEL
             >;
-            sensor-bindings = <&scroll_encoder>;
+            sensor-bindings = <&inc_dec_kp C_VOL_UP C_VOL_DN>;
         };
 
         adjust_layer {
@@ -45,7 +45,7 @@
 &none    &none    &none    &none    &none    &none      &none    &none    &none    &none    &none    &none    &none    &none
          &none    &none    &none    &none                        &none    &none    &none    &none
             >;
-            sensor-bindings = <&scroll_encoder>;
+            sensor-bindings = <&inc_dec_kp C_VOL_UP C_VOL_DN>;
         };
     };
 };
