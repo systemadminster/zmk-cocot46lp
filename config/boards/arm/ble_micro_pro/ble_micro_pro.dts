@@ -74,18 +74,17 @@
 	status = "okay";
 };
 
+/*
+ * USB device only. We intentionally define NO cdc_acm_uart child here: the
+ * ZMK Studio snippet (studio-rpc-usb-uart) adds its own CDC ACM for the RPC,
+ * and a second, unused CDC used to appear as a confusing extra COM port that
+ * broke Studio's port selection. Keep just the udc so the snippet can attach.
+ *
+ * To re-enable debug logging later, add a cdc_acm_uart child back here plus a
+ * chosen zephyr,console, and the LOG/CDC configs in conf (deferred mode ONLY —
+ * TWIM + CONFIG_LOG_MODE_IMMEDIATE deadlocks the boot).
+ */
 zephyr_udc0: &usbd {
 	compatible = "nordic,nrf-usbd";
 	status = "okay";
-
-	cdc_acm_uart: cdc_acm_uart {
-		compatible = "zephyr,cdc-acm-uart";
-	};
 };
-
-/*
- * PRODUCTION: no console chosen (logging off in cocot46lp.conf).
- * To re-enable debug logging: add the LOG/CDC configs in conf (deferred mode
- * ONLY — TWIM + CONFIG_LOG_MODE_IMMEDIATE deadlocks the boot) and restore:
- *   / { chosen { zephyr,console = &cdc_acm_uart; }; };
- */
