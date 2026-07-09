@@ -18,6 +18,9 @@
 			compatible = "zmk,behavior-sensor-rotate";
 			#sensor-binding-cells = <0>;
 			bindings = <&msc SCRL_UP>, <&msc SCRL_DOWN>;
+			/* hold the scroll press long enough for a mouse tick to send
+			 * the wheel event (a 0ms tap sent nothing in fw86). */
+			tap-ms = <50>;
 		};
 	};
 
