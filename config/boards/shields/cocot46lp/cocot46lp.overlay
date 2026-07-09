@@ -1,10 +1,43 @@
 #include <dt-bindings/zmk/matrix_transform.h>
+#include <dt-bindings/gpio/gpio.h>
 /* Defines the zip_* input processor nodes (zip_xy_scaler etc.) */
 #include <input/processors.dtsi>
 /* Defines &key_physical_attrs for the physical layout (ZMK Studio) */
 #include <physical_layouts.dtsi>
+/* SCRL_UP / SCRL_DOWN and the &msc mouse-scroll behavior */
+#include <dt-bindings/zmk/pointing.h>
 
 / {
+	/*
+	 * Rotary encoder rotation -> mouse wheel scroll. This is a SENSOR, not a
+	 * key, so it works but is NOT editable in ZMK Studio (edit here in the
+	 * file). CW = scroll up, CCW = scroll down.
+	 */
+	behaviors {
+		scroll_encoder: scroll_encoder {
+			compatible = "zmk,behavior-sensor-rotate";
+			#sensor-binding-cells = <0>;
+			bindings = <&msc SCRL_UP>, <&msc SCRL_DOWN>;
+		};
+	};
+
+	/* EC11 rotary encoder between the thumb clusters. A/B on the QMK encoder
+	 * pins: PIN7=P0.19, PIN8=P0.20 (per BMP pin assign). Not in the key
+	 * matrix, so no conflict. */
+	encoder: encoder {
+		compatible = "alps,ec11";
+		a-gpios = <&gpio0 19 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
+		b-gpios = <&gpio0 20 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
+		steps = <80>;
+		status = "okay";
+	};
+
+	sensors: sensors {
+		compatible = "zmk,keymap-sensors";
+		sensors = <&encoder>;
+		triggers-per-rotation = <20>;
+	};
+
 	chosen {
 		zmk,kscan = &kscan0;
 		/*
@@ -65,9 +98,10 @@
 			, <&key_physical_attrs 100 100  300  200 0 0 0>
 			, <&key_physical_attrs 100 100  400  213 0 0 0>
 			, <&key_physical_attrs 100 100  500  227 0 0 0>
-			/* row 2 center (mkp LCLK, BSPC) */
-			, <&key_physical_attrs 100 100  600  285 0 0 0>
-			, <&key_physical_attrs 100 100  700  285 0 0 0>
+			/* trackball push-click (center, above the thumbs) */
+			, <&key_physical_attrs 100 100  625  205 0 0 0>
+			/* rotary-encoder push-click (center, between the thumbs) */
+			, <&key_physical_attrs 100 100  625  350 0 0 0>
 			/* row 2 (right: N M COMMA DOT FSLH EQUAL) */
 			, <&key_physical_attrs 100 100  850  227 0 0 0>
 			, <&key_physical_attrs 100 100  950  213 0 0 0>
