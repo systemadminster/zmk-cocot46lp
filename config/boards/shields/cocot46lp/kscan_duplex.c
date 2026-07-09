@@ -72,6 +72,9 @@ static void kscan_duplex_poll_handler(struct k_work *work)
                 } else {
                     data->matrix_state[r] &= ~BIT(c);
                 }
+                if (pressed) {
+                    LOG_INF("KEYSCAN press r=%d c=%d", r, c);
+                }
                 if (data->callback) {
                     data->callback(dev, r, c, pressed);
                 }
@@ -104,6 +107,9 @@ static void kscan_duplex_poll_handler(struct k_work *work)
                     data->matrix_state[r] |= BIT(vcol);
                 } else {
                     data->matrix_state[r] &= ~BIT(vcol);
+                }
+                if (pressed) {
+                    LOG_INF("KEYSCAN press r=%d c=%d", r, vcol);
                 }
                 if (data->callback) {
                     data->callback(dev, r, vcol, pressed);
