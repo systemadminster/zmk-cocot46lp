@@ -11,13 +11,13 @@
 	/*
 	 * Rotary encoder rotation -> mouse wheel scroll. This is a SENSOR, not a
 	 * key, so it works but is NOT editable in ZMK Studio (edit here in the
-	 * file). CW = scroll up, CCW = scroll down.
+	 * file). fw96: direction reversed per request — CW = scroll down, CCW = up.
 	 */
 	behaviors {
 		scroll_encoder: scroll_encoder {
 			compatible = "zmk,behavior-sensor-rotate";
 			#sensor-binding-cells = <0>;
-			bindings = <&msc SCRL_UP>, <&msc SCRL_DOWN>;
+			bindings = <&msc SCRL_DOWN>, <&msc SCRL_UP>;
 			/* hold the scroll press long enough for the mouse tick(s) to
 			 * send wheel events (0ms and 50ms sent nothing). */
 			tap-ms = <150>;
