@@ -2,16 +2,14 @@ manifest:
   remotes:
     - name: zmkfirmware
       url-base: https://github.com/zmkfirmware
-    - name: kzyz
-      url-base: https://github.com/kzyz
   projects:
     - name: zmk
       remote: zmkfirmware
       revision: main
       import: app/west.yml
-    # AZ1UBALL (PIM447-compatible I2C trackball) input driver
-    - name: zmk-az1uball-driver
-      remote: kzyz
-      revision: main
+    # AZ1UBALL (PIM447-compatible I2C trackball) input driver is now VENDORED
+    # in-tree at ../az1uball_driver (added via -DZMK_EXTRA_MODULES in build.yml)
+    # because we patched it to add jitter smoothing. Previously this pulled
+    # kzyz/zmk-az1uball-driver as an external module.
   self:
     path: config

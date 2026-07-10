@@ -1,0 +1,13 @@
+menuconfig AZ1UBALL
+  bool "Palette-System AZ1UBALL Trackball Support"
+  select ZMK_POINTING
+  select I2C
+  select PM_DEVICE
+  help
+    Enable driver for Palette-System AZ1UBALL Trackball.
+
+if AZ1UBALL
+  module = AZ1UBALL
+  module-str = AZ1UBALL
+  source "${ZEPHYR_BASE}/subsys/logging/Kconfig.template.log_config"
+endif #AZ1UBALL

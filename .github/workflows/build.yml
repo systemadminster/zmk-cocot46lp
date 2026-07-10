@@ -43,7 +43,8 @@ jobs:
             -S studio-rpc-usb-uart \
             -- \
             -DSHIELD=cocot46lp \
-            -DZMK_CONFIG="${GITHUB_WORKSPACE}/config"
+            -DZMK_CONFIG="${GITHUB_WORKSPACE}/config" \
+            -DZMK_EXTRA_MODULES="${GITHUB_WORKSPACE}/az1uball_driver"
 
       - name: Rename artifact
         run: cp build/zephyr/zmk.uf2 cocot46lp-ble_micro_pro.uf2

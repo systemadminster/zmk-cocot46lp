@@ -1,0 +1,10 @@
+description: AZ1UBALL trackball sensor
+
+compatible: "palette,az1uball"
+
+include: i2c-device.yaml
+
+properties:
+  reg:
+    required: true
+    description: I2C address of the trackball
