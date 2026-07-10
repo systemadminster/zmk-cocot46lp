@@ -15,6 +15,7 @@
 &kp LALT &kp Z    &kp X    &kp C    &kp V    &kp B      &mkp LCLK &kp BSPC &kp N   &kp M    &kp COMMA &kp DOT &kp FSLH &kp EQUAL
          &kp RGUI &mo 1    &kp SPACE &kp TAB             &kp ENTER &kp SPACE &mo 2 &kp DEL
 &mkp RCLK
+&kp DEL
             >;
             sensor-bindings = <&scroll_encoder>;
         };
@@ -25,6 +26,7 @@
 &kp RSHFT &studio_unlock &none &none &none   &none      &kp LBKT &none    &kp UP   &none    &none    &kp RBKT
 &kp INS  &none    &none    &none    &none    &none      &mkp LCLK &mkp RCLK &none  &kp LEFT &kp DOWN &kp RIGHT &kp BSLH &kp NON_US_HASH
          &none    &none    &kp SPACE &kp LGUI                     &kp ENTER &kp SPACE &none &none
+&trans
 &trans
             >;
             sensor-bindings = <&scroll_encoder>;
@@ -37,6 +39,7 @@
 &none    &none    &none    &none    &none    &none      &mkp LCLK &mkp RCLK &none   &none    &none    &none    &none    &none
          &kp LGUI &none    &kp SPACE &kp LGUI                     &kp ENTER &kp SPACE &none &kp DEL
 &trans
+&trans
             >;
             sensor-bindings = <&scroll_encoder>;
         };
@@ -47,6 +50,7 @@
 &none    &none    &none    &none    &none    &none      &none    &none    &none    &none    &none    &none
 &none    &none    &none    &none    &none    &none      &none    &none    &none    &none    &none    &none    &none    &none
          &none    &none    &none    &none                        &none    &none    &none    &none
+&trans
 &trans
             >;
             sensor-bindings = <&scroll_encoder>;

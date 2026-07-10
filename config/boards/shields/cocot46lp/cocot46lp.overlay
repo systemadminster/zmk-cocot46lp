@@ -103,8 +103,8 @@
 			, <&key_physical_attrs 100 100  500  227 0 0 0>
 			/* trackball push-click RC(2,6) — GH center (upper) */
 			, <&key_physical_attrs 100 100  675  110 0 0 0>
-			/* backspace RC(0,13) — center, below the trackball */
-			, <&key_physical_attrs 100 100  675  230 0 0 0>
+			/* backspace RC(0,13) — BN center, RIGHT of the pair */
+			, <&key_physical_attrs 100 100  725  230 0 0 0>
 			/* row 2 (right: N M COMMA DOT FSLH EQUAL) */
 			, <&key_physical_attrs 100 100  850  227 0 0 0>
 			, <&key_physical_attrs 100 100  950  213 0 0 0>
@@ -124,6 +124,8 @@
 			, <&key_physical_attrs 100 100 1120  375  (1800) 1170  425>
 			/* rotary-encoder push-click RC(1,6) (center, between thumbs) */
 			, <&key_physical_attrs 100 100  675  380 0 0 0>
+			/* left center key RC(0,6) — BN center, LEFT of backspace */
+			, <&key_physical_attrs 100 100  625  230 0 0 0>
 			;
 	};
 
@@ -134,8 +136,9 @@
 	 * half scans in phase2 but MIRRORED — device col 5 down to 0 (logical
 	 * col 12 down to 7) reads left-to-right. Logical col 6 (phase1 c6) and
 	 * col 13 (phase2 c6) are extra positions used only where a row needs
-	 * more than 12 keys (row2 mouse click = RC(2,6), encoder push = RC(1,6),
-	 * backspace = RC(0,13)).
+	 * more than 12 keys. The 4 real center switches, all found by keyscan log:
+	 *   trackball click = RC(2,6), encoder push = RC(1,6),
+	 *   left center key  = RC(0,6), backspace (right) = RC(0,13).
 	 *
 	 * fw92: the center BACKSPACE switch was found by live keyscan logging to
 	 * fire at RC(0,13) (row0 phase2 col6), NOT RC(2,13). RC(2,13) is a phantom
@@ -152,6 +155,7 @@
 			RC(2,0) RC(2,1) RC(2,2) RC(2,3) RC(2,4) RC(2,5) RC(2,6) RC(0,13) RC(2,12) RC(2,11) RC(2,10) RC(2,9) RC(2,8) RC(2,7)
 			                RC(3,2) RC(3,3) RC(3,4) RC(3,5)                 RC(3,12) RC(3,11) RC(3,10) RC(3,9)
 			RC(1,6)
+			RC(0,6)
 		>;
 	};
 

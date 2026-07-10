@@ -87,16 +87,4 @@
 zephyr_udc0: &usbd {
 	compatible = "nordic,nrf-usbd";
 	status = "okay";
-
-	/* DIAG fw93: CDC console re-added to read the keyscan log for the key to
-	 * the LEFT of backspace. Remove again for production (single Studio port). */
-	cdc_acm_uart: cdc_acm_uart {
-		compatible = "zephyr,cdc-acm-uart";
-	};
-};
-
-/ {
-	chosen {
-		zephyr,console = &cdc_acm_uart;
-	};
 };
