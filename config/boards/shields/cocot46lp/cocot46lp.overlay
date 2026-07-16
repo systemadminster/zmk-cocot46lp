@@ -202,14 +202,14 @@
 	 * AZ1UBALL trackball -> ZMK pointing. The listener forwards the
 	 * driver's relative X/Y (and click) into ZMK's input pipeline.
 	 *
-	 * The raw counts are tiny, so scale them up. zip_xy_scaler <mul div>
-	 * multiplies movement by mul/div; 6/1 is a good starting speed
-	 * (raise mul for faster, lower for slower).
+	 * No zip_xy_scaler here anymore: speed/scaling is now done inside the
+	 * driver as speed-dependent acceleration (ACCEL_* in az1uball.c), which
+	 * gives fine control at low speed and fast flicks at high speed. To add a
+	 * flat global multiplier back, re-add input-processors = <&zip_xy_scaler M D>.
 	 */
 	trackball_input_listener {
 		compatible = "zmk,input-listener";
 		device = <&trackball>;
-		input-processors = <&zip_xy_scaler 6 1>;
 	};
 };
 

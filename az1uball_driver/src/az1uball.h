@@ -25,10 +25,10 @@ struct az1uball_data {
     bool sw_pressed_prev;
     uint32_t idle_count;
 
-    /* Jitter smoothing state (Q8 fixed-point, 256 = 1.0). Exponential
-     * low-pass of the per-poll delta: unity DC gain keeps sustained-motion
-     * speed intact, while high-frequency +/-1 sensor jitter averages toward
-     * zero. See SMOOTH_SHIFT in az1uball.c. */
-    int32_t smooth_x;
-    int32_t smooth_y;
+    /* Acceleration residual accumulator (Q8 fixed-point, 256 = 1.0). Carries
+     * the sub-pixel remainder of the accelerated delta so slow/fine motion is
+     * never dropped and alternating jitter averages out. See ACCEL_* in
+     * az1uball.c. */
+    int32_t resid_x;
+    int32_t resid_y;
 };

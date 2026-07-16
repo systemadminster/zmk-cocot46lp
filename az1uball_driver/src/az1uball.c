@@ -21,31 +21,30 @@ LOG_MODULE_REGISTER(az1uball, CONFIG_AZ1UBALL_LOG_LEVEL);
 #define IDLE_THRESHOLD      50           // 500ms 無操作でアイドルへ移行
 
 /*
- * Jitter smoothing (kzyz driver has no CPI/smoothing knob, so we add one).
+ * Pointer acceleration + residual accumulation (replaces the old low-pass).
  *
- * The AZ1UBALL reports coarse counts; at low speed it emits alternating +/-1
- * noise that the zip_xy_scaler then multiplies (x6), which shows up as the
- * cursor "shaking". We low-pass the delta with a fixed-point exponential
- * moving average: alpha = 1 / 2^SMOOTH_SHIFT.
+ * The kzyz driver has no CPI/accel knob and just reported the raw count, which
+ * the x6 scaler then quantised into coarse 6px steps -- fine control snagged and
+ * the earlier low-pass made it worse by rounding small moves away entirely.
  *
- *   smooth += (delta - smooth) * alpha
+ * Instead, scale each poll's delta by a speed-dependent multiplier (Q8 fixed
+ * point, 256 = 1.0x):
  *
- * A low-pass filter has unity DC gain, so a *sustained* delta converges to its
- * true value -> full cursor speed is preserved. Symmetric +/-1 jitter averages
- * toward zero and rounds away. No residual accumulation on purpose: with small
- * alpha the accumulated tail would "coast" many pixels after you stop; rounding
- * per-sample costs a fraction of a pixel on quick flicks but never drifts.
+ *   speed = |dx| + |dy|                    (movement this 10ms poll)
+ *   mult  = BASE + GAIN * speed  (capped at MAX)
+ *   out   = delta * mult                   (accumulated with a residual)
  *
- * SMOOTH_SHIFT larger = smoother (kills more jitter, adds a little latency).
- *   1 -> alpha 1/2 (light),  2 -> alpha 1/4 (default),  3 -> alpha 1/8 (heavy)
+ * Slow motion -> small mult -> precise, sub-pixel-smooth fine control, and the
+ * alternating +/-1 sensor jitter is barely amplified AND averages out in the
+ * residual (so no laggy filter is needed). Fast flicks -> large mult -> quick.
+ * The residual carries the fractional pixels so no motion is ever dropped.
+ *
+ * Tuning: raise BASE for faster slow-speed tracking (less fine); raise
+ * GAIN/MAX for faster flicks; lower BASE for finer control + more jitter reject.
  */
-#define SMOOTH_SHIFT        2
-
-/* round a Q8 fixed-point value to the nearest whole integer */
-static inline int az1uball_q8_round(int32_t v)
-{
-    return (v >= 0) ? ((v + 128) >> 8) : -(((-v) + 128) >> 8);
-}
+#define ACCEL_BASE_Q8   179   /* ~0.70x at the slowest motion (fine control)   */
+#define ACCEL_GAIN_Q8   205   /* +~0.80x per unit of per-poll speed            */
+#define ACCEL_MAX_Q8   2304   /* cap at 9.0x for fast flicks (was a flat 6x)   */
 
 /* Execution functions for asynchronous work */
 static void az1uball_work_handler(struct k_work *work)
@@ -67,12 +66,20 @@ static void az1uball_work_handler(struct k_work *work)
     int16_t delta_x = (int16_t)buf[2] - (int16_t)buf[3]; // RIGHT - LEFT
     int16_t delta_y = (int16_t)buf[1] - (int16_t)buf[0]; // DOWN - UP
 
-    /* Low-pass the raw delta to suppress jitter (see SMOOTH_SHIFT note). */
-    data->smooth_x += (((int32_t)delta_x << 8) - data->smooth_x) >> SMOOTH_SHIFT;
-    data->smooth_y += (((int32_t)delta_y << 8) - data->smooth_y) >> SMOOTH_SHIFT;
+    /* Speed-dependent acceleration with residual accumulation (see note above). */
+    int aspeed = (delta_x < 0 ? -delta_x : delta_x) + (delta_y < 0 ? -delta_y : delta_y);
+    int32_t mult = ACCEL_BASE_Q8 + ACCEL_GAIN_Q8 * aspeed;
+    if (mult > ACCEL_MAX_Q8) {
+        mult = ACCEL_MAX_Q8;
+    }
 
-    int out_x = az1uball_q8_round(data->smooth_x);
-    int out_y = az1uball_q8_round(data->smooth_y);
+    data->resid_x += (int32_t)delta_x * mult;
+    data->resid_y += (int32_t)delta_y * mult;
+
+    int out_x = data->resid_x >> 8;          /* whole pixels out this poll */
+    int out_y = data->resid_y >> 8;
+    data->resid_x -= (int32_t)out_x << 8;     /* keep the sub-pixel remainder */
+    data->resid_y -= (int32_t)out_y << 8;
 
     /* Axis orientation / scaling (te9no-style): correct a rotated/mirrored
      * mounting purely from devicetree. Order: swap-xy, invert, scale. */
@@ -91,14 +98,14 @@ static void az1uball_work_handler(struct k_work *work)
     out_y *= config->scale_y;
 
     /* Idle tracking follows the RAW sensor, so polling stays at 100Hz while the
-     * ball is physically moving even if the smoothed output rounds to zero. */
+     * ball is physically moving even if the accelerated output is 0 this poll. */
     if (delta_x != 0 || delta_y != 0) {
         data->idle_count = 0;
     } else if (data->idle_count < IDLE_THRESHOLD) {
         data->idle_count++;
     }
 
-    /* Report smoothed movement if non-zero */
+    /* Report accelerated movement if non-zero */
     if (out_x != 0 || out_y != 0) {
         /* Report relative X movement */
         if (out_x != 0) {
@@ -169,8 +176,8 @@ static int az1uball_init(const struct device *dev)
 
     data->dev = dev;
     data->sw_pressed_prev = false;
-    data->smooth_x = 0;
-    data->smooth_y = 0;
+    data->resid_x = 0;
+    data->resid_y = 0;
 
     /* Check if the I2C device is ready */
     if (!device_is_ready(config->i2c.bus)) {
