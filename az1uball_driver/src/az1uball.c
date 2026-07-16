@@ -16,6 +16,7 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(az1uball, CONFIG_AZ1UBALL_LOG_LEVEL);
 
+#define POLL_NOMINAL_MS     10           // 速度正規化の基準(アクティブ時の周期)
 #define POLL_INTERVAL       K_MSEC(10)   // アクティブ時: 10ms (100Hz)
 #define POLL_INTERVAL_IDLE  K_MSEC(100)  // アイドル時: 100ms (10Hz)
 #define POLL_INTERVAL_RETRY K_MSEC(250)  // 未接続/初期化待ちの再試行: 250ms
@@ -31,9 +32,15 @@ LOG_MODULE_REGISTER(az1uball, CONFIG_AZ1UBALL_LOG_LEVEL);
  * Instead, scale each poll's delta by a speed-dependent multiplier (Q8 fixed
  * point, 256 = 1.0x):
  *
- *   speed = |dx| + |dy|                    (movement this 10ms poll)
+ *   speed = (|dx| + |dy|) * 10ms / elapsed  (movement rate, time-normalised)
  *   mult  = BASE + GAIN * speed  (capped at MAX)
- *   out   = delta * mult                   (accumulated with a residual)
+ *   out   = delta * mult                    (accumulated with a residual)
+ *
+ * The speed proxy MUST be divided by the real elapsed time: the poll interval is
+ * not constant (BLE radio work delays the workqueue, and the idle tier polls at
+ * 100ms), so a raw per-poll delta reads as "fast" purely because more time
+ * passed -- the multiplier would spike and the cursor wobbles (very visible on
+ * wireless, and on the first move out of idle).
  *
  * Slow motion -> small mult -> precise, sub-pixel-smooth fine control, and the
  * alternating +/-1 sensor jitter is barely amplified AND averages out in the
@@ -70,6 +77,7 @@ static void az1uball_work_handler(struct k_work *work)
         data->idle_count = 0;
         data->resid_x = 0;
         data->resid_y = 0;
+        data->last_poll_ms = k_uptime_get();   /* fresh timebase for the speed calc */
         LOG_INF("AZ1UBALL (re)initialized");
     }
 
@@ -87,8 +95,20 @@ static void az1uball_work_handler(struct k_work *work)
     int16_t delta_x = (int16_t)buf[2] - (int16_t)buf[3]; // RIGHT - LEFT
     int16_t delta_y = (int16_t)buf[1] - (int16_t)buf[0]; // DOWN - UP
 
-    /* Speed-dependent acceleration with residual accumulation (see note above). */
-    int aspeed = (delta_x < 0 ? -delta_x : delta_x) + (delta_y < 0 ? -delta_y : delta_y);
+    /* Speed-dependent acceleration with residual accumulation (see note above).
+     * Normalise the movement to the nominal poll period using real elapsed time
+     * so an irregular/long poll gap is not mistaken for fast motion. */
+    int64_t now_ms = k_uptime_get();
+    int32_t dt_ms = (int32_t)(now_ms - data->last_poll_ms);
+    data->last_poll_ms = now_ms;
+    if (dt_ms < 1) {
+        dt_ms = 1;
+    } else if (dt_ms > 100) {
+        dt_ms = 100;            /* clamp so a very long gap can't zero the speed */
+    }
+
+    int moved = (delta_x < 0 ? -delta_x : delta_x) + (delta_y < 0 ? -delta_y : delta_y);
+    int aspeed = (moved * POLL_NOMINAL_MS) / dt_ms;
     int32_t mult = ACCEL_BASE_Q8 + ACCEL_GAIN_Q8 * aspeed;
     if (mult > ACCEL_MAX_Q8) {
         mult = ACCEL_MAX_Q8;
@@ -199,6 +219,7 @@ static int az1uball_init(const struct device *dev)
     data->sw_pressed_prev = false;
     data->resid_x = 0;
     data->resid_y = 0;
+    data->last_poll_ms = k_uptime_get();
     data->initialized = false;   /* turbo mode is (re)sent from the poll handler */
 
     /* Check if the I2C device is ready */

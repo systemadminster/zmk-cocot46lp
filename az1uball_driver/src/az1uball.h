@@ -28,6 +28,12 @@ struct az1uball_data {
      * (re)initializes whenever this is false, so a flaky connection auto-recovers. */
     bool initialized;
 
+    /* Uptime (ms) of the previous poll, used to time-normalise the speed proxy:
+     * the poll interval is NOT constant (BLE radio work delays the workqueue,
+     * and the idle tier polls at 100ms), so acceleration must divide by the real
+     * elapsed time or it misreads a long gap as "fast". */
+    int64_t last_poll_ms;
+
     /* Acceleration residual accumulator (Q8 fixed-point, 256 = 1.0). Carries
      * the sub-pixel remainder of the accelerated delta so slow/fine motion is
      * never dropped and alternating jitter averages out. See ACCEL_* in
