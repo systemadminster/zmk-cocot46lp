@@ -1,0 +1,6 @@
+board:
+  name: ble_micro_pro_nosd
+  full_name: BLE Micro Pro (SoftDevice erased)
+  vendor: sekigon
+  socs:
+    - name: nrf52840

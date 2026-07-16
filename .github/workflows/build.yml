@@ -10,7 +10,15 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: zmkfirmware/zmk-build-arm:3.5
-    name: Build cocot46lp (nice_nano_v2)
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # board 2: S140 SoftDevice still resident -> app at 0x26000
+          - board: ble_micro_pro
+          # board 1: SoftDevice erased -> app at 0x1000
+          - board: ble_micro_pro_nosd
+    name: Build cocot46lp (${{ matrix.board }})
 
     steps:
       - name: Checkout
@@ -39,7 +47,7 @@ jobs:
       - name: Build firmware
         run: |
           west build -s zmk/app \
-            -b ble_micro_pro \
+            -b ${{ matrix.board }} \
             -S studio-rpc-usb-uart \
             -- \
             -DSHIELD=cocot46lp \
@@ -47,10 +55,10 @@ jobs:
             -DZMK_EXTRA_MODULES="${GITHUB_WORKSPACE}/az1uball_driver"
 
       - name: Rename artifact
-        run: cp build/zephyr/zmk.uf2 cocot46lp-ble_micro_pro.uf2
+        run: cp build/zephyr/zmk.uf2 cocot46lp-${{ matrix.board }}.uf2
 
       - name: Upload firmware
         uses: actions/upload-artifact@v4
         with:
-          name: cocot46lp-firmware
-          path: cocot46lp-ble_micro_pro.uf2
+          name: cocot46lp-firmware-${{ matrix.board }}
+          path: cocot46lp-${{ matrix.board }}.uf2

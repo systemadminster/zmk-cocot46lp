@@ -1,0 +1,72 @@
+/dts-v1/;
+#include <nordic/nrf52840_qiaa.dtsi>
+
+/ {
+	model = "BLE Micro Pro (SoftDevice erased)";
+	compatible = "sekigon,ble-micro-pro";
+
+	chosen {
+		zephyr,sram = &sram0;
+		zephyr,flash = &flash0;
+		zephyr,code-partition = &code_partition;
+	};
+};
+
+&flash0 {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		/*
+		 * BOARD 1 layout: the S140 SoftDevice has been ERASED from this board.
+		 * The BMP bootloader derives the application start from the SoftDevice
+		 * size, so with no SoftDevice present it hands off to the app right
+		 * after the MBR -- at 0x1000, NOT 0x26000 (which is the board-2 layout
+		 * where the SoftDevice is still resident). Flashing the 0x26000 image
+		 * here simply will not boot.
+		 */
+		mbr_partition: partition@0 {
+			label = "mbr";
+			reg = <0x00000000 0x00001000>;
+		};
+
+		code_partition: partition@1000 {
+			label = "code_partition";
+			reg = <0x00001000 0x000cf000>;   /* 0x1000..0xd0000 */
+		};
+
+		/*
+		 * Same as board 2 and just as critical: the BMP bootloader starts at
+		 * 0xe0000 (UICR.NRFFW[0] = 0x000e0000), so storage must stay well below
+		 * it or the first BLE identity/bond write corrupts the bootloader and
+		 * bricks the boot. Do NOT place storage at or above 0xe0000.
+		 */
+		storage_partition: partition@d0000 {
+			label = "storage";
+			reg = <0x000d0000 0x00008000>;   /* 0xd0000..0xd8000 */
+		};
+	};
+};
+
+&gpiote0 {
+	status = "okay";
+};
+
+&gpio0 {
+	status = "okay";
+};
+
+&gpio1 {
+	status = "okay";
+};
+
+/*
+ * USB device only -- no cdc_acm_uart child on purpose: the ZMK Studio snippet
+ * (studio-rpc-usb-uart) adds its own CDC ACM for the RPC, and a second unused
+ * CDC shows up as a confusing extra COM port that breaks Studio's port picker.
+ */
+zephyr_udc0: &usbd {
+	compatible = "nordic,nrf-usbd";
+	status = "okay";
+};

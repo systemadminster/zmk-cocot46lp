@@ -1,0 +1,6 @@
+# hwmv2: this file selects the SoC for the board.
+# Selecting SOC_NRF52840_QIAA pulls in SOC_NRF52840 -> SOC_SERIES_NRF52X
+# -> SOC_FAMILY_NORDIC_NRF, which sets ARCH, HAS_NRFX, and the Nordic
+# clock-control driver (so the K32SRC clock choice becomes valid).
+config BOARD_BLE_MICRO_PRO_NOSD
+	select SOC_NRF52840_QIAA

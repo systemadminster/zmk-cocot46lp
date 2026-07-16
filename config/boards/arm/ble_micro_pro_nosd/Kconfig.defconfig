@@ -1,0 +1,2 @@
+# hwmv2: board-conditional Kconfig defaults.
+# BOARD string is set by the build system from board.yml — do not set it here.
