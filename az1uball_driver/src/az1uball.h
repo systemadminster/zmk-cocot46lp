@@ -9,6 +9,13 @@
 
 struct az1uball_config {
     struct i2c_dt_spec i2c;
+    /* Axis orientation / scaling (adopted from te9no/zmk-driver-az1uball).
+     * Applied after smoothing: swap-xy, then per-axis invert, then scale. */
+    bool invert_x;
+    bool invert_y;
+    bool swap_xy;
+    int scale_x;
+    int scale_y;
 };
 
 struct az1uball_data {

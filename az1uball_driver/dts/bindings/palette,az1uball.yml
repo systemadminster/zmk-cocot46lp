@@ -8,3 +8,23 @@ properties:
   reg:
     required: true
     description: I2C address of the trackball
+
+  # Axis orientation / scaling (adopted from te9no/zmk-driver-az1uball) so a
+  # rotated/mirrored mounting can be corrected from devicetree, no code edit.
+  invert-x:
+    type: boolean
+    description: Negate the X delta.
+  invert-y:
+    type: boolean
+    description: Negate the Y delta.
+  swap-xy:
+    type: boolean
+    description: Swap the X and Y axes (fixes a 90-degree rotated mount).
+  scale-x:
+    type: int
+    default: 1
+    description: Integer multiplier applied to the X delta after smoothing.
+  scale-y:
+    type: int
+    default: 1
+    description: Integer multiplier applied to the Y delta after smoothing.

@@ -247,5 +247,10 @@
 	trackball: trackball@a {
 		compatible = "palette,az1uball";
 		reg = <0x0A>;
+		/* Mounting is rotated 90 deg (ball-up moved the cursor right), so
+		 * swap the axes and invert Y -> up=up, right=right, down=down, left=left.
+		 * Flip these if any direction is still off. */
+		swap-xy;
+		invert-y;
 	};
 };

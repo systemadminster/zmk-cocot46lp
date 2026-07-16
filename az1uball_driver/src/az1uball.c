@@ -74,6 +74,22 @@ static void az1uball_work_handler(struct k_work *work)
     int out_x = az1uball_q8_round(data->smooth_x);
     int out_y = az1uball_q8_round(data->smooth_y);
 
+    /* Axis orientation / scaling (te9no-style): correct a rotated/mirrored
+     * mounting purely from devicetree. Order: swap-xy, invert, scale. */
+    if (config->swap_xy) {
+        int tmp = out_x;
+        out_x = out_y;
+        out_y = tmp;
+    }
+    if (config->invert_x) {
+        out_x = -out_x;
+    }
+    if (config->invert_y) {
+        out_y = -out_y;
+    }
+    out_x *= config->scale_x;
+    out_y *= config->scale_y;
+
     /* Idle tracking follows the RAW sensor, so polling stays at 100Hz while the
      * ball is physically moving even if the smoothed output rounds to zero. */
     if (delta_x != 0 || delta_y != 0) {
@@ -180,6 +196,11 @@ static int az1uball_init(const struct device *dev)
     static struct az1uball_data az1uball_data_##n;                     \
     static const struct az1uball_config az1uball_config_##n = {        \
         .i2c = I2C_DT_SPEC_INST_GET(n),                                \
+        .invert_x = DT_INST_PROP(n, invert_x),                         \
+        .invert_y = DT_INST_PROP(n, invert_y),                         \
+        .swap_xy = DT_INST_PROP(n, swap_xy),                           \
+        .scale_x = DT_INST_PROP_OR(n, scale_x, 1),                     \
+        .scale_y = DT_INST_PROP_OR(n, scale_y, 1),                     \
     };                                                                 \
     PM_DEVICE_DT_INST_DEFINE(n, az1uball_pm_action);                   \
     DEVICE_DT_INST_DEFINE(n,                                           \
