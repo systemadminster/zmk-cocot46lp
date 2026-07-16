@@ -42,9 +42,9 @@ LOG_MODULE_REGISTER(az1uball, CONFIG_AZ1UBALL_LOG_LEVEL);
  * Tuning: raise BASE for faster slow-speed tracking (less fine); raise
  * GAIN/MAX for faster flicks; lower BASE for finer control + more jitter reject.
  */
-#define ACCEL_BASE_Q8   179   /* ~0.70x at the slowest motion (fine control)   */
-#define ACCEL_GAIN_Q8   205   /* +~0.80x per unit of per-poll speed            */
-#define ACCEL_MAX_Q8   2304   /* cap at 9.0x for fast flicks (was a flat 6x)   */
+#define ACCEL_BASE_Q8   320   /* ~1.25x at the slowest motion (longer slow move) */
+#define ACCEL_GAIN_Q8   205   /* +~0.80x per unit of per-poll speed             */
+#define ACCEL_MAX_Q8   2304   /* cap at 9.0x for fast flicks (was a flat 6x)    */
 
 /* Execution functions for asynchronous work */
 static void az1uball_work_handler(struct k_work *work)
