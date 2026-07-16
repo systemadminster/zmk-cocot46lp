@@ -18,6 +18,7 @@ LOG_MODULE_REGISTER(az1uball, CONFIG_AZ1UBALL_LOG_LEVEL);
 
 #define POLL_INTERVAL       K_MSEC(10)   // アクティブ時: 10ms (100Hz)
 #define POLL_INTERVAL_IDLE  K_MSEC(100)  // アイドル時: 100ms (10Hz)
+#define POLL_INTERVAL_RETRY K_MSEC(250)  // 未接続/初期化待ちの再試行: 250ms
 #define IDLE_THRESHOLD      50           // 500ms 無操作でアイドルへ移行
 
 /*
@@ -54,11 +55,31 @@ static void az1uball_work_handler(struct k_work *work)
     uint8_t buf[5];
     int ret;
 
+    /* Auto-recovery: (re)send the turbo-mode init whenever the device is not
+     * currently alive. This makes the trackball come back on its own once a
+     * flaky solder joint / loose connector makes contact again — no reboot. */
+    if (!data->initialized) {
+        uint8_t cmd = 0x91;
+        ret = i2c_write_dt(&config->i2c, &cmd, sizeof(cmd));
+        if (ret < 0) {
+            /* still no contact — retry slowly (saves power while disconnected) */
+            k_work_reschedule(&data->work, POLL_INTERVAL_RETRY);
+            return;
+        }
+        data->initialized = true;
+        data->idle_count = 0;
+        data->resid_x = 0;
+        data->resid_y = 0;
+        LOG_INF("AZ1UBALL (re)initialized");
+    }
+
     // Read data from I2C
     ret = i2c_read_dt(&config->i2c, buf, sizeof(buf));
     if (ret < 0) {
         LOG_ERR("Failed to read movement data from AZ1UBALL: %d", ret);
-        k_work_reschedule(&data->work, POLL_INTERVAL);
+        /* contact lost — drop to re-init path so it recovers when it returns */
+        data->initialized = false;
+        k_work_reschedule(&data->work, POLL_INTERVAL_RETRY);
         return;
     }
 
@@ -158,6 +179,7 @@ static int az1uball_pm_action(const struct device *dev, enum pm_device_action ac
         break;
     case PM_DEVICE_ACTION_RESUME:
         data->idle_count = 0;
+        data->initialized = false;   /* re-init on the first poll after resume */
         k_work_schedule(&data->work, POLL_INTERVAL);
         break;
     default:
@@ -172,12 +194,12 @@ static int az1uball_init(const struct device *dev)
 {
     const struct az1uball_config *config = dev->config;
     struct az1uball_data *data = dev->data;
-    int ret;
 
     data->dev = dev;
     data->sw_pressed_prev = false;
     data->resid_x = 0;
     data->resid_y = 0;
+    data->initialized = false;   /* turbo mode is (re)sent from the poll handler */
 
     /* Check if the I2C device is ready */
     if (!device_is_ready(config->i2c.bus)) {
@@ -185,14 +207,9 @@ static int az1uball_init(const struct device *dev)
         return -ENODEV;
     }
 
-    /* Set turbo mode */
-    uint8_t cmd = 0x91;
-    ret = i2c_write_dt(&config->i2c, &cmd, sizeof(cmd));
-    if (ret < 0) {
-        LOG_ERR("Failed to set turbo mode");
-        return ret;
-    }
-
+    /* Do NOT fail init if the trackball isn't responding right now: the poll
+     * handler sends turbo mode and keeps retrying, so a flaky connection (or a
+     * trackball powered up slightly after boot) recovers on its own. */
     k_work_init_delayable(&data->work, az1uball_work_handler);
     k_work_schedule(&data->work, POLL_INTERVAL);
 

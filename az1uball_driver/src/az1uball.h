@@ -24,6 +24,9 @@ struct az1uball_data {
     bool sw_pressed;
     bool sw_pressed_prev;
     uint32_t idle_count;
+    /* False until the trackball has answered turbo-mode init; the poll handler
+     * (re)initializes whenever this is false, so a flaky connection auto-recovers. */
+    bool initialized;
 
     /* Acceleration residual accumulator (Q8 fixed-point, 256 = 1.0). Carries
      * the sub-pixel remainder of the accelerated delta so slow/fine motion is
