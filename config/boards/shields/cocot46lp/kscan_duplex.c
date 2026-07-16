@@ -24,6 +24,10 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #define DUPLEX_MAX_COLS 8
 /* settle time in microseconds after driving a pin LOW */
 #define SETTLE_US 50
+/* Defer debounce: a new (raw) state must hold this many consecutive polls
+ * before we commit + report it. At poll-period 10ms, 2 = ~20ms, which kills
+ * switch chatter (double-fires / phantom releases) without noticeable lag. */
+#define DEBOUNCE_POLLS 2
 
 struct kscan_duplex_config {
     struct gpio_dt_spec rows[DUPLEX_MAX_ROWS];
@@ -39,7 +43,38 @@ struct kscan_duplex_data {
     struct k_work_delayable poll_work;
     /* Bitmask of pressed cols per row; phase2 occupies upper bits */
     uint32_t matrix_state[DUPLEX_MAX_ROWS];
+    /* Per-key consecutive-poll counter for defer debounce. Columns run
+     * 0..(2*num_cols-1): phase1 uses 0..num_cols-1, phase2 the upper half. */
+    uint8_t debounce[DUPLEX_MAX_ROWS][2 * DUPLEX_MAX_COLS];
 };
+
+/* Defer-debounced state update: only commit + report a change once the raw
+ * reading has held the new value for DEBOUNCE_POLLS consecutive polls. */
+static void kscan_duplex_update_key(const struct device *dev,
+                                    struct kscan_duplex_data *data,
+                                    int r, int col, bool pressed)
+{
+    bool was = (data->matrix_state[r] >> col) & 1U;
+
+    if (pressed == was) {
+        data->debounce[r][col] = 0;   /* stable: drop any pending change */
+        return;
+    }
+
+    if (++data->debounce[r][col] < DEBOUNCE_POLLS) {
+        return;                        /* not stable long enough yet */
+    }
+
+    data->debounce[r][col] = 0;
+    if (pressed) {
+        data->matrix_state[r] |= BIT(col);
+    } else {
+        data->matrix_state[r] &= ~BIT(col);
+    }
+    if (data->callback) {
+        data->callback(dev, r, col, pressed);
+    }
+}
 
 static void kscan_duplex_poll_handler(struct k_work *work)
 {
@@ -64,18 +99,7 @@ static void kscan_duplex_poll_handler(struct k_work *work)
 
         for (int c = 0; c < cfg->num_cols; c++) {
             int val = gpio_pin_get(cfg->cols[c].port, cfg->cols[c].pin);
-            bool pressed = (val == 0);
-            bool was = (data->matrix_state[r] >> c) & 1U;
-            if (pressed != was) {
-                if (pressed) {
-                    data->matrix_state[r] |= BIT(c);
-                } else {
-                    data->matrix_state[r] &= ~BIT(c);
-                }
-                if (data->callback) {
-                    data->callback(dev, r, c, pressed);
-                }
-            }
+            kscan_duplex_update_key(dev, data, r, c, (val == 0));
         }
 
         /* float row so phase 2 can use it as sense */
@@ -97,18 +121,7 @@ static void kscan_duplex_poll_handler(struct k_work *work)
 
         for (int r = 0; r < cfg->num_rows; r++) {
             int val = gpio_pin_get(cfg->rows[r].port, cfg->rows[r].pin);
-            bool pressed = (val == 0);
-            bool was = (data->matrix_state[r] >> vcol) & 1U;
-            if (pressed != was) {
-                if (pressed) {
-                    data->matrix_state[r] |= BIT(vcol);
-                } else {
-                    data->matrix_state[r] &= ~BIT(vcol);
-                }
-                if (data->callback) {
-                    data->callback(dev, r, vcol, pressed);
-                }
-            }
+            kscan_duplex_update_key(dev, data, r, vcol, (val == 0));
         }
 
         /* float col */
@@ -147,6 +160,7 @@ static int kscan_duplex_init(const struct device *dev)
 
     data->dev = dev;
     memset(data->matrix_state, 0, sizeof(data->matrix_state));
+    memset(data->debounce, 0, sizeof(data->debounce));
 
     for (int r = 0; r < cfg->num_rows; r++) {
         if (!gpio_is_ready_dt(&cfg->rows[r])) {

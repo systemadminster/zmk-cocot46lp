@@ -17,10 +17,20 @@
 		scroll_encoder: scroll_encoder {
 			compatible = "zmk,behavior-sensor-rotate";
 			#sensor-binding-cells = <0>;
-			bindings = <&msc SCRL_DOWN>, <&msc SCRL_UP>;
-			/* hold the scroll press long enough for the mouse tick(s) to
-			 * send wheel events (0ms and 50ms sent nothing). */
-			tap-ms = <150>;
+			/*
+			 * &msc is a held-scroll (behavior-input-two-axis): each tick moves
+			 * speed * trigger-period(16ms)/1000. The default SCRL value is only
+			 * 10 -> 0.16/tick -> ~96ms to reach one wheel click, so with the old
+			 * tap-ms=150 the encoder felt laggy at the start AND kept scrolling
+			 * after you stopped (the 150ms hold plays out). Use a much larger
+			 * scroll value so the FIRST 16ms tick already yields one click
+			 * (90*16/1000 = 1.44), and a short tap-ms so exactly one tick fires
+			 * per detent (>16ms to fire once, <32ms to avoid a second).
+			 * Direction stays reversed (down first) per the earlier request.
+			 * Tune: raise the 90 for faster scroll, adjust tap-ms 20..28.
+			 */
+			bindings = <&msc MOVE_Y(-90)>, <&msc MOVE_Y(90)>;
+			tap-ms = <24>;
 		};
 	};
 
