@@ -107,7 +107,16 @@ static void az1uball_work_handler(struct k_work *work)
         dt_ms = 100;            /* clamp so a very long gap can't zero the speed */
     }
 
-    int moved = (delta_x < 0 ? -delta_x : delta_x) + (delta_y < 0 ? -delta_y : delta_y);
+    /* Speed proxy = Euclidean magnitude of the move, NOT |dx|+|dy|. The L1 sum
+     * is ~1.41x larger on a 45-degree diagonal than on a cardinal move of the
+     * same physical speed, so diagonals used to get extra acceleration and felt
+     * off. Approximate hypot as max + 0.42*min (no sqrt) so the speed is
+     * direction-independent. */
+    int ax = (delta_x < 0 ? -delta_x : delta_x);
+    int ay = (delta_y < 0 ? -delta_y : delta_y);
+    int hi = (ax > ay) ? ax : ay;
+    int lo = (ax > ay) ? ay : ax;
+    int moved = hi + (lo * 27) / 64;   /* 27/64 = 0.422 ~= hypot() */
     /* Full-precision time-normalised gain term. Do NOT compute an integer
      * "aspeed" first: (moved*10)/dt truncated to 0 for slow moves (moved=1,
      * dt>10ms on wireless), which killed acceleration at low speed and left
