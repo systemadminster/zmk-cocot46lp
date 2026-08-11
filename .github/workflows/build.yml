@@ -57,11 +57,15 @@ jobs:
       - name: Build firmware
         run: |
           if [ "${{ matrix.shield }}" = "settings_reset" ]; then
-            # settings_reset is a stock ZMK shield; no config/module/studio needed
+            # settings_reset is a stock ZMK shield (no studio/module needed), but
+            # ZMK_CONFIG must still be passed so the build can FIND our custom
+            # in-config board (ble_micro_pro_nosd). cocot46lp.conf is named after
+            # the cocot46lp shield, so it is NOT applied for SHIELD=settings_reset.
             west build -s zmk/app \
               -b ${{ matrix.board }} \
               -- \
-              -DSHIELD=settings_reset
+              -DSHIELD=settings_reset \
+              -DZMK_CONFIG="${GITHUB_WORKSPACE}/config"
           else
             west build -s zmk/app \
               -b ${{ matrix.board }} \
