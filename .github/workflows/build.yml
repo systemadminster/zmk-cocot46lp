@@ -16,9 +16,19 @@ jobs:
         include:
           # board 2: S140 SoftDevice still resident -> app at 0x26000
           - board: ble_micro_pro
+            shield: cocot46lp
+            artifact: cocot46lp-firmware-ble_micro_pro
           # board 1: SoftDevice erased -> app at 0x1000
           - board: ble_micro_pro_nosd
-    name: Build cocot46lp (${{ matrix.board }})
+            shield: cocot46lp
+            artifact: cocot46lp-firmware-ble_micro_pro_nosd
+          # settings-reset for board 1: flash this ONCE to wipe all BLE bonds /
+          # identities, then flash the normal nosd firmware back and re-pair.
+          - board: ble_micro_pro_nosd
+            shield: settings_reset
+            artifact: settings-reset-board1
+
+    name: Build ${{ matrix.artifact }}
 
     steps:
       - name: Checkout
@@ -46,19 +56,27 @@ jobs:
 
       - name: Build firmware
         run: |
-          west build -s zmk/app \
-            -b ${{ matrix.board }} \
-            -S studio-rpc-usb-uart \
-            -- \
-            -DSHIELD=cocot46lp \
-            -DZMK_CONFIG="${GITHUB_WORKSPACE}/config" \
-            -DZMK_EXTRA_MODULES="${GITHUB_WORKSPACE}/az1uball_driver"
+          if [ "${{ matrix.shield }}" = "settings_reset" ]; then
+            # settings_reset is a stock ZMK shield; no config/module/studio needed
+            west build -s zmk/app \
+              -b ${{ matrix.board }} \
+              -- \
+              -DSHIELD=settings_reset
+          else
+            west build -s zmk/app \
+              -b ${{ matrix.board }} \
+              -S studio-rpc-usb-uart \
+              -- \
+              -DSHIELD=${{ matrix.shield }} \
+              -DZMK_CONFIG="${GITHUB_WORKSPACE}/config" \
+              -DZMK_EXTRA_MODULES="${GITHUB_WORKSPACE}/az1uball_driver"
+          fi
 
       - name: Rename artifact
-        run: cp build/zephyr/zmk.uf2 cocot46lp-${{ matrix.board }}.uf2
+        run: cp build/zephyr/zmk.uf2 ${{ matrix.artifact }}.uf2
 
       - name: Upload firmware
         uses: actions/upload-artifact@v4
         with:
-          name: cocot46lp-firmware-${{ matrix.board }}
-          path: cocot46lp-${{ matrix.board }}.uf2
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.artifact }}.uf2
