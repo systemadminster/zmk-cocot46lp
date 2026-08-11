@@ -50,9 +50,9 @@ LOG_MODULE_REGISTER(az1uball, CONFIG_AZ1UBALL_LOG_LEVEL);
  * Tuning: raise BASE for faster slow-speed tracking (less fine); raise
  * GAIN/MAX for faster flicks; lower BASE for finer control + more jitter reject.
  */
-#define ACCEL_BASE_Q8   480   /* slow (speed 1) ~3.0x -> longer slow moves        */
-#define ACCEL_GAIN_Q8   280   /* +~1.1x per unit of time-normalised speed         */
-#define ACCEL_MAX_Q8   3328   /* cap at 13x for fast flicks                        */
+#define ACCEL_BASE_Q8   896   /* slow ~3.5x -> solid slow tracking, precise        */
+#define ACCEL_GAIN_Q8   180   /* gentler ramp so slow<->fast is smooth/predictable */
+#define ACCEL_MAX_Q8   2816   /* cap at 11x for fast flicks (was 13x, less extreme) */
 
 /* Execution functions for asynchronous work */
 static void az1uball_work_handler(struct k_work *work)
@@ -108,8 +108,13 @@ static void az1uball_work_handler(struct k_work *work)
     }
 
     int moved = (delta_x < 0 ? -delta_x : delta_x) + (delta_y < 0 ? -delta_y : delta_y);
-    int aspeed = (moved * POLL_NOMINAL_MS) / dt_ms;
-    int32_t mult = ACCEL_BASE_Q8 + ACCEL_GAIN_Q8 * aspeed;
+    /* Full-precision time-normalised gain term. Do NOT compute an integer
+     * "aspeed" first: (moved*10)/dt truncated to 0 for slow moves (moved=1,
+     * dt>10ms on wireless), which killed acceleration at low speed and left
+     * only the base multiplier -> slow moves barely tracked. Fold the divide
+     * into the gain term so it keeps sub-unit resolution. */
+    int32_t gain_term = ((int32_t)ACCEL_GAIN_Q8 * moved * POLL_NOMINAL_MS) / dt_ms;
+    int32_t mult = ACCEL_BASE_Q8 + gain_term;
     if (mult > ACCEL_MAX_Q8) {
         mult = ACCEL_MAX_Q8;
     }
