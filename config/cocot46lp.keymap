@@ -5,6 +5,20 @@
 #include <dt-bindings/zmk/pointing.h>
 
 / {
+    /*
+     * Tri-layer: holding mo1 (lower) AND mo2 (raise) together activates the
+     * adjust layer (3), where the BLE controls live (&bt BT_CLR, &bt BT_SEL).
+     * Without this the adjust layer was unreachable, so bonds could not be
+     * cleared and re-pairing failed after a host removed the device.
+     */
+    conditional_layers {
+        compatible = "zmk,conditional-layers";
+        adjust {
+            if-layers = <1 2>;
+            then-layer = <3>;
+        };
+    };
+
     keymap {
         compatible = "zmk,keymap";
 
