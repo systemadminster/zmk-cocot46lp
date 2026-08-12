@@ -51,16 +51,24 @@ LOG_MODULE_REGISTER(az1uball, CONFIG_AZ1UBALL_LOG_LEVEL);
  * GAIN/MAX for faster flicks; lower BASE for finer control + more jitter reject.
  */
 /*
- * CONSTANT SENSITIVITY (GAIN=0): the cursor moves in fixed proportion to the
- * ball, like a plain trackball with no OS acceleration. This is the smoothest,
- * most faithful motion this coarse sensor can give -- circles and diagonals are
- * not warped by a speed-dependent multiplier, and there is no low-speed wobble
- * from a noisy speed estimate. Trade-off: no fast-flick boost, so big moves need
- * more rolling. Set GAIN > 0 to bring acceleration back; BASE is sensitivity.
+ * MOSTLY-CONSTANT sensitivity with a GENTLE fast-move boost.
+ *
+ * A strong GAIN warps circles/diagonals and wobbles at low speed, because the
+ * per-poll speed estimate is noisy on this coarse sensor (and over BLE). A GAIN
+ * of 0 fixed that but lost the fast-flick reach. So keep the slow end flat --
+ * where the noise lives and where faithful tracking matters -- and let only
+ * genuinely fast motion climb, capped well below the old extremes:
+ *
+ *   slow (speed ~1)   ~7.2x   (essentially the constant-sensitivity feel)
+ *   medium (speed ~5) ~8.2x
+ *   fast   (speed 15+) up to 12x cap
+ *
+ * Tuning: BASE = slow sensitivity, GAIN = how quickly fast motion boosts,
+ * MAX = ceiling. Raise GAIN/MAX for more flick reach at the cost of smoothness.
  */
-#define ACCEL_BASE_Q8  1792   /* constant ~7.0x sensitivity (raise/lower to taste) */
-#define ACCEL_GAIN_Q8     0   /* 0 = no acceleration (constant sensitivity)        */
-#define ACCEL_MAX_Q8   4096   /* cap (not reached while GAIN = 0)                  */
+#define ACCEL_BASE_Q8  1792   /* ~7.0x baseline sensitivity (slow = faithful)      */
+#define ACCEL_GAIN_Q8    60   /* gentle: only fast motion adds meaningful boost    */
+#define ACCEL_MAX_Q8   3072   /* cap at 12x for fast flicks                        */
 
 /* Execution functions for asynchronous work */
 static void az1uball_work_handler(struct k_work *work)
