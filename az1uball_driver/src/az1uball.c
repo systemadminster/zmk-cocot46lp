@@ -50,9 +50,17 @@ LOG_MODULE_REGISTER(az1uball, CONFIG_AZ1UBALL_LOG_LEVEL);
  * Tuning: raise BASE for faster slow-speed tracking (less fine); raise
  * GAIN/MAX for faster flicks; lower BASE for finer control + more jitter reject.
  */
-#define ACCEL_BASE_Q8   896   /* slow ~3.5x -> solid slow tracking, precise        */
-#define ACCEL_GAIN_Q8   180   /* gentler ramp so slow<->fast is smooth/predictable */
-#define ACCEL_MAX_Q8   2816   /* cap at 11x for fast flicks (was 13x, less extreme) */
+/*
+ * CONSTANT SENSITIVITY (GAIN=0): the cursor moves in fixed proportion to the
+ * ball, like a plain trackball with no OS acceleration. This is the smoothest,
+ * most faithful motion this coarse sensor can give -- circles and diagonals are
+ * not warped by a speed-dependent multiplier, and there is no low-speed wobble
+ * from a noisy speed estimate. Trade-off: no fast-flick boost, so big moves need
+ * more rolling. Set GAIN > 0 to bring acceleration back; BASE is sensitivity.
+ */
+#define ACCEL_BASE_Q8  1792   /* constant ~7.0x sensitivity (raise/lower to taste) */
+#define ACCEL_GAIN_Q8     0   /* 0 = no acceleration (constant sensitivity)        */
+#define ACCEL_MAX_Q8   4096   /* cap (not reached while GAIN = 0)                  */
 
 /* Execution functions for asynchronous work */
 static void az1uball_work_handler(struct k_work *work)
