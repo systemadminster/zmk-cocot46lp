@@ -29,6 +29,10 @@ LOG_MODULE_REGISTER(az1uball, CONFIG_AZ1UBALL_LOG_LEVEL);
 #define POLL_INTERVAL_IDLE  K_MSEC(20)   // アイドル時: 20ms (50Hz) — 反応を優先
 #define POLL_INTERVAL_RETRY K_MSEC(250)  // 未接続/初期化待ちの再試行: 250ms
 #define IDLE_THRESHOLD      200          // 1秒 無操作でアイドルへ移行(5ms×200)
+/* Consecutive failed reads tolerated before assuming the device is really gone.
+ * 10 x 5ms = 50ms of retrying at full rate, which rides out transient NACKs from
+ * a marginal connection without a visible dead spot. */
+#define READ_FAIL_LIMIT     10
 
 /*
  * Pointer acceleration + residual accumulation (replaces the old low-pass).
@@ -98,6 +102,7 @@ static void az1uball_work_handler(struct k_work *work)
             return;
         }
         data->initialized = true;
+        data->read_fails = 0;
         data->idle_count = 0;
         data->resid_x = 0;
         data->resid_y = 0;
@@ -108,12 +113,22 @@ static void az1uball_work_handler(struct k_work *work)
     // Read data from I2C
     ret = i2c_read_dt(&config->i2c, buf, sizeof(buf));
     if (ret < 0) {
-        LOG_ERR("Failed to read movement data from AZ1UBALL: %d", ret);
-        /* contact lost — drop to re-init path so it recovers when it returns */
+        /* A SINGLE transient NACK must not stall the pointer: dropping straight
+         * to the 250ms re-init tier produced a quarter-second dead spot, felt as
+         * the ball "rolling but nothing happens". Keep polling at full rate and
+         * only declare the device gone after several consecutive failures. */
+        if (++data->read_fails < READ_FAIL_LIMIT) {
+            k_work_reschedule(&data->work, POLL_INTERVAL);
+            return;
+        }
+        LOG_ERR("AZ1UBALL read failed %d times, re-initializing: %d",
+                data->read_fails, ret);
         data->initialized = false;
+        data->read_fails = 0;
         k_work_reschedule(&data->work, POLL_INTERVAL_RETRY);
         return;
     }
+    data->read_fails = 0;
 
     /* Calculate deltas */
     int16_t delta_x = (int16_t)buf[2] - (int16_t)buf[3]; // RIGHT - LEFT
@@ -258,6 +273,7 @@ static int az1uball_init(const struct device *dev)
     data->resid_x = 0;
     data->resid_y = 0;
     data->last_poll_ms = k_uptime_get();
+    data->read_fails = 0;
     data->initialized = false;   /* turbo mode is (re)sent from the poll handler */
 
     /* Check if the I2C device is ready */

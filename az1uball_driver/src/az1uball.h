@@ -27,6 +27,9 @@ struct az1uball_data {
     /* False until the trackball has answered turbo-mode init; the poll handler
      * (re)initializes whenever this is false, so a flaky connection auto-recovers. */
     bool initialized;
+    /* Consecutive failed I2C reads. A single transient NACK must NOT stall the
+     * pointer (see READ_FAIL_LIMIT in az1uball.c). */
+    uint8_t read_fails;
 
     /* Uptime (ms) of the previous poll, used to time-normalise the speed proxy:
      * the poll interval is NOT constant (BLE radio work delays the workqueue,
