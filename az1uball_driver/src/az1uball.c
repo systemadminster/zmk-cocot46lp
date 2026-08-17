@@ -94,7 +94,10 @@ static void az1uball_work_handler(struct k_work *work)
      * currently alive. This makes the trackball come back on its own once a
      * flaky solder joint / loose connector makes contact again — no reboot. */
     if (!data->initialized) {
-        uint8_t cmd = 0x91;
+        /* Count mode: 0x91 = turbo/"AZ" accumulation, 0x90 = normal. te9no's
+         * driver exposes both; trying 0x90 to see whether it reports small slow
+         * movements more reliably. Revert to 0x91 if it is not better. */
+        uint8_t cmd = 0x90;
         ret = i2c_write_dt(&config->i2c, &cmd, sizeof(cmd));
         if (ret < 0) {
             /* still no contact — retry slowly (saves power while disconnected) */
