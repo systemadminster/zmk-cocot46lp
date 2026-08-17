@@ -78,9 +78,15 @@ LOG_MODULE_REGISTER(az1uball, CONFIG_AZ1UBALL_LOG_LEVEL);
  * Tuning: BASE = slow sensitivity, GAIN = how quickly fast motion boosts,
  * MAX = ceiling. Raise GAIN/MAX for more flick reach at the cost of smoothness.
  */
+/*
+ * NOTE: these are tuned for count mode 0x90 (normal). 0x90 tracks small slow
+ * movements far better than 0x91 (turbo) but emits smaller counts, so fast
+ * flicks travel less -- compensate with a stronger GAIN and a higher cap. The
+ * slow end (BASE) is deliberately unchanged: that is the part 0x90 improved.
+ */
 #define ACCEL_BASE_Q8  1792   /* ~7.0x baseline sensitivity (slow = faithful)      */
-#define ACCEL_GAIN_Q8    60   /* gentle: only fast motion adds meaningful boost    */
-#define ACCEL_MAX_Q8   3072   /* cap at 12x for fast flicks                        */
+#define ACCEL_GAIN_Q8   160   /* stronger ramp: restores fast-flick reach on 0x90  */
+#define ACCEL_MAX_Q8   4608   /* cap at 18x for fast flicks                        */
 
 /* Execution functions for asynchronous work */
 static void az1uball_work_handler(struct k_work *work)
