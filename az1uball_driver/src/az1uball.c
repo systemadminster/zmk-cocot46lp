@@ -16,11 +16,19 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(az1uball, CONFIG_AZ1UBALL_LOG_LEVEL);
 
-#define POLL_NOMINAL_MS     10           // 速度正規化の基準(アクティブ時の周期)
-#define POLL_INTERVAL       K_MSEC(10)   // アクティブ時: 10ms (100Hz)
-#define POLL_INTERVAL_IDLE  K_MSEC(100)  // アイドル時: 100ms (10Hz)
+/*
+ * Poll timing. Small slow movements were sometimes dropped entirely: reading the
+ * AZ1UBALL clears its counters, so anything that happens between polls has to
+ * survive as an accumulated count -- and the old 100ms idle tier meant the FIRST
+ * 100ms of a move could be swallowed (feels like "it doesn't move at all until I
+ * push harder"). Poll faster (5ms, as te9no's driver does) and make the idle
+ * tier shallow (20ms) so the first motion after a pause is picked up promptly.
+ */
+#define POLL_NOMINAL_MS     5            // 速度正規化の基準(アクティブ時の周期)
+#define POLL_INTERVAL       K_MSEC(5)    // アクティブ時: 5ms (200Hz)
+#define POLL_INTERVAL_IDLE  K_MSEC(20)   // アイドル時: 20ms (50Hz) — 反応を優先
 #define POLL_INTERVAL_RETRY K_MSEC(250)  // 未接続/初期化待ちの再試行: 250ms
-#define IDLE_THRESHOLD      50           // 500ms 無操作でアイドルへ移行
+#define IDLE_THRESHOLD      200          // 1秒 無操作でアイドルへ移行(5ms×200)
 
 /*
  * Pointer acceleration + residual accumulation (replaces the old low-pass).
