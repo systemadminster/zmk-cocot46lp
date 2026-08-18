@@ -1,7 +1,7 @@
 # BLE Micro Pro, board 1: SoftDevice erased -> app runs from 0x1000
 
 # BMP hardware essentials (needed for ANY build of this board, incl. shields
-# like settings_reset that don't pull in cocot46lp.conf): the BMP has no 32kHz
+# like settings_reset that don't pull in cocot48lp.conf): the BMP has no 32kHz
 # crystal so the RC oscillator MUST be selected, and P0.10 (NFC2) must be freed
 # from NFC to work as GPIO.
 CONFIG_CLOCK_CONTROL_NRF_K32SRC_RC=y

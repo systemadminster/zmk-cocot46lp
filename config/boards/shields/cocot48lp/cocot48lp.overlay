@@ -67,12 +67,12 @@
 	 * can render and remap the board. Order MUST match the keymap bindings
 	 * and the transform map: row0 (12), row1 (12), row2 (6 left + 2 center +
 	 * 6 right = 14), thumbs (4 left + 4 right = 8) => 46 keys. Coordinates are
-	 * an approximate column-staggered cocot46lp shape (functional for Studio;
+	 * an approximate column-staggered cocot48lp shape (functional for Studio;
 	 * refine later if desired).
 	 */
 	default_layout: default_layout {
 		compatible = "zmk,physical-layout";
-		display-name = "cocot46lp";
+		display-name = "cocot48lp";
 		transform = <&default_transform>;
 		kscan = <&kscan0>;
 		keys
@@ -216,7 +216,7 @@
 /*
  * AZ1UBALL (PIM447-compatible I2C trackball, addr 0x0A).
  *
- * cocot46lp routes the trackball to the Pro Micro hardware-I2C position
+ * cocot48lp routes the trackball to the Pro Micro hardware-I2C position
  * (labels 2/3). On the BMP those positions are PIN5/PIN6, which per the
  * official "pin assign.jpg" are the ONLY pins with I2C level shifters:
  *   SDA = PIN5 = P0.18

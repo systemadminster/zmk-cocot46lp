@@ -1,5 +1,5 @@
-config SHIELD_COCOT46LP
-	def_bool $(shields_list_contains,cocot46lp)
+config SHIELD_COCOT48LP
+	def_bool $(shields_list_contains,cocot48lp)
 
 config KSCAN_GPIO_DUPLEX_MATRIX
 	bool "GPIO duplex matrix keyboard scanner"

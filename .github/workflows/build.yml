@@ -16,12 +16,12 @@ jobs:
         include:
           # board 2: S140 SoftDevice still resident -> app at 0x26000
           - board: ble_micro_pro
-            shield: cocot46lp
-            artifact: cocot46lp-firmware-ble_micro_pro
+            shield: cocot48lp
+            artifact: cocot48lp-firmware-ble_micro_pro
           # board 1: SoftDevice erased -> app at 0x1000
           - board: ble_micro_pro_nosd
-            shield: cocot46lp
-            artifact: cocot46lp-firmware-ble_micro_pro_nosd
+            shield: cocot48lp
+            artifact: cocot48lp-firmware-ble_micro_pro_nosd
           # settings-reset for board 1: flash this ONCE to wipe all BLE bonds /
           # identities, then flash the normal nosd firmware back and re-pair.
           - board: ble_micro_pro_nosd
@@ -59,8 +59,8 @@ jobs:
           if [ "${{ matrix.shield }}" = "settings_reset" ]; then
             # settings_reset is a stock ZMK shield (no studio/module needed), but
             # ZMK_CONFIG must still be passed so the build can FIND our custom
-            # in-config board (ble_micro_pro_nosd). cocot46lp.conf is named after
-            # the cocot46lp shield, so it is NOT applied for SHIELD=settings_reset.
+            # in-config board (ble_micro_pro_nosd). cocot48lp.conf is named after
+            # the cocot48lp shield, so it is NOT applied for SHIELD=settings_reset.
             west build -s zmk/app \
               -b ${{ matrix.board }} \
               -- \
