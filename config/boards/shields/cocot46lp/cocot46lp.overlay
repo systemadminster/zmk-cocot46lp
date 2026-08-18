@@ -210,6 +210,18 @@
 	trackball_input_listener {
 		compatible = "zmk,input-listener";
 		device = <&trackball>;
+
+		/*
+		 * Sniper mode: while layer 4 is held (the center-right key, see keymap),
+		 * scale pointer movement down to 1/4 for precise aiming at small links
+		 * and icons. This is the counterpart to the very high flick acceleration
+		 * -- fast to cross the screen, sniper key to land on the target.
+		 * Adjust the divisor (4) for more/less slowdown.
+		 */
+		sniper {
+			layers = <4>;
+			input-processors = <&zip_xy_scaler 1 4>;
+		};
 	};
 };
 
