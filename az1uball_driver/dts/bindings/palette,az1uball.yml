@@ -24,9 +24,15 @@ properties:
   no-switch:
     type: boolean
     description: |
-      Do not report the ball press as a left click. Set this when the board also
-      wires the ball switch into the key matrix, so the keymap (and ZMK Studio)
-      owns that binding instead of the driver forcing button 1.
+      Do not report the ball press at all. Set this when the board wires the ball
+      switch into the key matrix as well, so the keymap owns that binding.
+
+  switch-code:
+    type: int
+    description: |
+      Input event code reported for the ball press. ZMK maps mouse buttons as
+      INPUT_BTN_0 = MB1 (left, the default), INPUT_BTN_1 = MB2 (right),
+      INPUT_BTN_2 = MB3 (middle).
   scale-x:
     type: int
     default: 1

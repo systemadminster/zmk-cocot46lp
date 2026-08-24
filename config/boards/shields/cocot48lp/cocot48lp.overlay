@@ -6,6 +6,8 @@
 #include <physical_layouts.dtsi>
 /* SCRL_UP / SCRL_DOWN and the &msc mouse-scroll behavior */
 #include <dt-bindings/zmk/pointing.h>
+/* INPUT_BTN_* codes for the trackball's switch-code property */
+#include <zephyr/dt-bindings/input/input-event-codes.h>
 
 / {
 	/*
@@ -262,9 +264,10 @@
 		 * Flip these if any direction is still off. */
 		swap-xy;
 		invert-y;
-		/* The ball switch is also in the key matrix at RC(2,6), so let the
-		 * keymap own it (editable in ZMK Studio) instead of the driver
-		 * hard-coding a left click on top of it. */
-		no-switch;
+		/* The ball press is wired ONLY to the trackball module (not to the key
+		 * matrix), so the driver is the only thing that sees it and it cannot be
+		 * remapped in ZMK Studio. Choose the button here: INPUT_BTN_2 = MB3
+		 * (middle click). INPUT_BTN_0 = MB1, INPUT_BTN_1 = MB2. */
+		switch-code = <INPUT_BTN_2>;
 	};
 };

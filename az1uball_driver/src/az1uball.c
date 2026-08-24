@@ -236,17 +236,17 @@ static void az1uball_work_handler(struct k_work *work)
     data->sw_pressed = (buf[4] & MSK_SWITCH_STATE) != 0;
 
     /*
-     * Report the ball press as a left click -- UNLESS the board also wires that
-     * switch into the key matrix (cocot48lp does, at RC(2,6)). In that case the
-     * keymap owns the binding, and reporting BTN_0 here too means the driver's
-     * left click fires on top of whatever the keymap says: setting the key to
-     * MB3 in ZMK Studio appeared to "stay button 1". Set `no-switch` in the
-     * devicetree node to leave the click entirely to the keymap.
+     * The ball press is NOT in the key matrix on this board -- the driver is the
+     * only thing that sees it, which is why it cannot be remapped in ZMK Studio.
+     * `switch-code` therefore selects which mouse button it sends (ZMK maps
+     * INPUT_BTN_0 = MB1, INPUT_BTN_1 = MB2, INPUT_BTN_2 = MB3/middle);
+     * `no-switch` suppresses it entirely.
      */
     if (config->no_switch) {
         data->sw_pressed_prev = data->sw_pressed;
     } else if (data->sw_pressed != data->sw_pressed_prev) {
-        ret = input_report_key(data->dev, INPUT_BTN_0, data->sw_pressed ? 1 : 0, true, K_NO_WAIT);
+        ret = input_report_key(data->dev, config->switch_code,
+                               data->sw_pressed ? 1 : 0, true, K_NO_WAIT);
         if (ret < 0) {
             LOG_ERR("Failed to report key");
         }
@@ -317,6 +317,7 @@ static int az1uball_init(const struct device *dev)
         .invert_y = DT_INST_PROP(n, invert_y),                         \
         .swap_xy = DT_INST_PROP(n, swap_xy),                           \
         .no_switch = DT_INST_PROP(n, no_switch),                       \
+        .switch_code = DT_INST_PROP_OR(n, switch_code, INPUT_BTN_0),   \
         .scale_x = DT_INST_PROP_OR(n, scale_x, 1),                     \
         .scale_y = DT_INST_PROP_OR(n, scale_y, 1),                     \
     };                                                                 \

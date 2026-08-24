@@ -14,9 +14,11 @@ struct az1uball_config {
     bool invert_x;
     bool invert_y;
     bool swap_xy;
-    /* True: do not report the ball press as BTN_0 -- the key matrix / keymap
-     * owns that switch (see the no-switch note in az1uball.c). */
+    /* True: do not report the ball press at all. */
     bool no_switch;
+    /* Input code reported for the ball press. ZMK maps mouse buttons as
+     * INPUT_BTN_0 = MB1, INPUT_BTN_1 = MB2, INPUT_BTN_2 = MB3 (middle). */
+    int switch_code;
     int scale_x;
     int scale_y;
 };
