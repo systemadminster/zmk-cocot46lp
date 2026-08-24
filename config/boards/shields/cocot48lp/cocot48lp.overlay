@@ -262,5 +262,9 @@
 		 * Flip these if any direction is still off. */
 		swap-xy;
 		invert-y;
+		/* The ball switch is also in the key matrix at RC(2,6), so let the
+		 * keymap own it (editable in ZMK Studio) instead of the driver
+		 * hard-coding a left click on top of it. */
+		no-switch;
 	};
 };

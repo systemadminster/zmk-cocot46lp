@@ -235,8 +235,17 @@ static void az1uball_work_handler(struct k_work *work)
     /* Update switch state */
     data->sw_pressed = (buf[4] & MSK_SWITCH_STATE) != 0;
 
-    /* Report switch state if it changed */
-    if (data->sw_pressed != data->sw_pressed_prev) {
+    /*
+     * Report the ball press as a left click -- UNLESS the board also wires that
+     * switch into the key matrix (cocot48lp does, at RC(2,6)). In that case the
+     * keymap owns the binding, and reporting BTN_0 here too means the driver's
+     * left click fires on top of whatever the keymap says: setting the key to
+     * MB3 in ZMK Studio appeared to "stay button 1". Set `no-switch` in the
+     * devicetree node to leave the click entirely to the keymap.
+     */
+    if (config->no_switch) {
+        data->sw_pressed_prev = data->sw_pressed;
+    } else if (data->sw_pressed != data->sw_pressed_prev) {
         ret = input_report_key(data->dev, INPUT_BTN_0, data->sw_pressed ? 1 : 0, true, K_NO_WAIT);
         if (ret < 0) {
             LOG_ERR("Failed to report key");
@@ -307,6 +316,7 @@ static int az1uball_init(const struct device *dev)
         .invert_x = DT_INST_PROP(n, invert_x),                         \
         .invert_y = DT_INST_PROP(n, invert_y),                         \
         .swap_xy = DT_INST_PROP(n, swap_xy),                           \
+        .no_switch = DT_INST_PROP(n, no_switch),                       \
         .scale_x = DT_INST_PROP_OR(n, scale_x, 1),                     \
         .scale_y = DT_INST_PROP_OR(n, scale_y, 1),                     \
     };                                                                 \

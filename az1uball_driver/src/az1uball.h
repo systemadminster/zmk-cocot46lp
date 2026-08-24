@@ -14,6 +14,9 @@ struct az1uball_config {
     bool invert_x;
     bool invert_y;
     bool swap_xy;
+    /* True: do not report the ball press as BTN_0 -- the key matrix / keymap
+     * owns that switch (see the no-switch note in az1uball.c). */
+    bool no_switch;
     int scale_x;
     int scale_y;
 };

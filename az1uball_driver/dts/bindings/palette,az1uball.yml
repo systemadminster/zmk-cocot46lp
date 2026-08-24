@@ -20,6 +20,13 @@ properties:
   swap-xy:
     type: boolean
     description: Swap the X and Y axes (fixes a 90-degree rotated mount).
+
+  no-switch:
+    type: boolean
+    description: |
+      Do not report the ball press as a left click. Set this when the board also
+      wires the ball switch into the key matrix, so the keymap (and ZMK Studio)
+      owns that binding instead of the driver forcing button 1.
   scale-x:
     type: int
     default: 1
