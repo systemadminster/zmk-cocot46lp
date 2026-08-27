@@ -85,7 +85,7 @@ LOG_MODULE_REGISTER(az1uball, CONFIG_AZ1UBALL_LOG_LEVEL);
  * slow end (BASE) is deliberately unchanged: that is the part 0x90 improved.
  */
 #define ACCEL_BASE_Q8  1792   /* ~7.0x baseline sensitivity (slow = faithful)      */
-#define ACCEL_GAIN_Q8   900   /* steeper ramp so medium-speed moves travel further */
+#define ACCEL_GAIN_Q8  1400   /* very steep ramp: medium speeds cover big distance */
 #define ACCEL_MAX_Q8  20480   /* cap at 80x: hard flick spans a large desktop      */
 
 /* Execution functions for asynchronous work */
